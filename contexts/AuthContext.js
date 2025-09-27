@@ -115,8 +115,8 @@ export const AuthProvider = ({ children }) => {
         provider: 'google',
         options: {
           redirectTo: typeof window !== 'undefined' 
-            ? `${window.location.origin}/`
-            : 'https://edusense-brown.vercel.app/'
+            ? `${window.location.origin}/auth/callback`
+            : 'https://edusense-brown.vercel.app/auth/callback'
         }
       })
 
