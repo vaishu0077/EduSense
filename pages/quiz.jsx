@@ -30,6 +30,7 @@ export default function Quiz() {
   const [quiz, setQuiz] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [quizStarted, setQuizStarted] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -140,6 +141,13 @@ export default function Quiz() {
     setCurrentQuestionIndex(prev => prev - 1)
     setSelectedAnswer(responses[quiz.questions[currentQuestionIndex - 1]?.id] || '')
     setShowHint(false)
+  }
+
+  const startQuiz = () => {
+    setQuizStarted(true)
+    if (quiz.timeLimit) {
+      setTimeRemaining(quiz.timeLimit * 60) // Convert minutes to seconds
+    }
   }
 
   const handleSubmitQuiz = async () => {
@@ -280,18 +288,48 @@ export default function Quiz() {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="card mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
-              ></div>
+          {/* Quiz Start Screen */}
+          {!quizStarted ? (
+            <div className="card mb-6 text-center">
+              <div className="mb-6">
+                <Brain className="h-16 w-16 text-indigo-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to Start?</h2>
+                <p className="text-gray-600 mb-4">
+                  This quiz has {quiz.questions.length} questions
+                  {quiz.timeLimit && ` with a ${quiz.timeLimit} minute time limit`}.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-2">Quiz Instructions:</h3>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Read each question carefully</li>
+                    <li>• Select the best answer</li>
+                    <li>• Use the hint button if you need help</li>
+                    <li>• You can navigate between questions</li>
+                    {quiz.timeLimit && <li>• Complete within the time limit</li>}
+                  </ul>
+                </div>
+                <button
+                  onClick={startQuiz}
+                  className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Start Quiz
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Progress Bar */}
+              <div className="card mb-6">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {/* Question */}
-          {currentQuestion && (
+              {/* Question */}
+              {currentQuestion && (
             <div className="card mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
@@ -455,6 +493,8 @@ export default function Quiz() {
               )}
             </div>
           </div>
+            </>
+          )}
 
           {/* AI Features */}
           <div className="card bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
