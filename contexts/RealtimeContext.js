@@ -3,12 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 import { useAuth } from './AuthContext'
 import toast from 'react-hot-toast'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
+// Use the same Supabase client instance as AuthContext
 let supabase = null
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey)
+if (typeof window !== 'undefined' && window.__supabase_client) {
+  supabase = window.__supabase_client
 }
 
 const RealtimeContext = createContext({})

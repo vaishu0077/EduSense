@@ -192,8 +192,8 @@ export default function Materials() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-300">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
       </div>
     )
   }
@@ -204,26 +204,26 @@ export default function Materials() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <BookOpen className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">Study Materials</span>
+              <BookOpen className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              <span className="ml-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Study Materials</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowUpload(!showUpload)}
-                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                className="flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Material
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="text-indigo-600 hover:text-indigo-500 font-medium"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium transition-colors"
               >
                 Back to Dashboard
               </button>
@@ -236,14 +236,14 @@ export default function Materials() {
         {showUpload ? (
           /* Upload Section */
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload New Material</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Upload New Material</h2>
               <FileUpload onFileUpload={handleFileUpload} />
             </div>
             
             <button
               onClick={() => setShowUpload(false)}
-              className="text-gray-600 hover:text-gray-800"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               ← Back to Materials Library
             </button>

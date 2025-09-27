@@ -30,6 +30,10 @@ export default function Quiz() {
   const [quiz, setQuiz] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [quizStarted, setQuizStarted] = useState(false)
+  const [quizCompleted, setQuizCompleted] = useState(false)
+  const [quizResults, setQuizResults] = useState(null)
+  const [reviewMode, setReviewMode] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -142,6 +146,24 @@ export default function Quiz() {
     setShowHint(false)
   }
 
+  const startQuiz = () => {
+    setQuizStarted(true)
+    if (quiz.timeLimit) {
+      setTimeRemaining(quiz.timeLimit * 60) // Convert minutes to seconds
+    }
+  }
+
+  const goToDashboard = () => {
+    router.push('/')
+  }
+
+  const reviewAnswers = () => {
+    setCurrentQuestionIndex(0)
+    setQuizStarted(true)
+    setQuizCompleted(false)
+    setReviewMode(true)
+  }
+
   const handleSubmitQuiz = async () => {
     setSubmitting(true)
     try {
@@ -163,8 +185,30 @@ export default function Quiz() {
       })
       
       const result = await response.json()
+      
+      // Calculate detailed results
+      const detailedResults = quiz.questions.map((question, index) => {
+        const userAnswer = responses[question.id]
+        const isCorrect = userAnswer === question.correct_answer
+        return {
+          question: question,
+          userAnswer: userAnswer,
+          correctAnswer: question.correct_answer,
+          isCorrect: isCorrect,
+          explanation: question.explanation
+        }
+      })
+      
+      setQuizResults({
+        score: result.score,
+        totalQuestions: quiz.questions.length,
+        correctAnswers: detailedResults.filter(r => r.isCorrect).length,
+        detailedResults: detailedResults,
+        timeTaken: quiz.time_limit ? (quiz.time_limit * 60 - timeRemaining) : null
+      })
+      
+      setQuizCompleted(true)
       toast.success(`Quiz completed! Score: ${result.score}%`)
-      router.push('/progress')
     } catch (error) {
       console.error('Error submitting quiz:', error)
       toast.error('Failed to submit quiz')
@@ -207,10 +251,10 @@ export default function Quiz() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="text-center">
           <div className="spinner w-8 h-8 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading AI-generated quiz...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading AI-generated quiz...</p>
         </div>
       </div>
     )
@@ -218,37 +262,37 @@ export default function Quiz() {
 
   if (!quiz) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Quiz not found</h3>
-          <p className="text-gray-500">The quiz you're looking for doesn't exist.</p>
+          <XCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Quiz not found</h3>
+          <p className="text-gray-500 dark:text-gray-400">The quiz you're looking for doesn't exist.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <GraduationCap className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">EduSense</span>
+              <GraduationCap className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-gray-100">EduSense</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/profile')}
-                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700"
+                className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span>Profile</span>
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 Dashboard
               </button>
@@ -280,18 +324,80 @@ export default function Quiz() {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="card mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
-              ></div>
+          {/* Quiz Completion Screen */}
+          {quizCompleted && quizResults ? (
+            <div className="card mb-6 text-center">
+              <div className="mb-6">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
+                <div className="text-4xl font-bold text-indigo-600 mb-2">{quizResults.score}%</div>
+                <p className="text-gray-600 mb-4">
+                  You got {quizResults.correctAnswers} out of {quizResults.totalQuestions} questions correct
+                  {quizResults.timeTaken && ` in ${Math.floor(quizResults.timeTaken / 60)}:${(quizResults.timeTaken % 60).toString().padStart(2, '0')}`}
+                </p>
+                
+                <div className="flex justify-center space-x-4 mb-6">
+                  <button
+                    onClick={reviewAnswers}
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center"
+                  >
+                    <Brain className="h-5 w-5 mr-2" />
+                    Review Answers
+                  </button>
+                  <button
+                    onClick={goToDashboard}
+                    className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center"
+                  >
+                    <GraduationCap className="h-5 w-5 mr-2" />
+                    Dashboard
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : !quizStarted ? (
+            /* Quiz Start Screen */
+            <div className="card mb-6 text-center">
+              <div className="mb-6">
+                <Brain className="h-16 w-16 text-indigo-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to Start?</h2>
+                <p className="text-gray-600 mb-4">
+                  This quiz has {quiz.questions.length} questions
+                  {quiz.timeLimit && ` with a ${quiz.timeLimit} minute time limit`}.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-2">Quiz Instructions:</h3>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Read each question carefully</li>
+                    <li>• Select the best answer</li>
+                    <li>• Use the hint button if you need help</li>
+                    <li>• You can navigate between questions</li>
+                    {quiz.timeLimit && <li>• Complete within the time limit</li>}
+                  </ul>
+                </div>
+                <button
+                  onClick={startQuiz}
+                  className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Start Quiz
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Progress Bar */}
+              <div className="card mb-6">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
 
-          {/* Question */}
-          {currentQuestion && (
+              {/* Question */}
+              {currentQuestion && (
             <div className="card mb-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
@@ -307,6 +413,35 @@ export default function Quiz() {
                       <Volume2 className="h-5 w-5" />
                     </button>
                   </div>
+                  
+                  {/* Review Mode Information */}
+                  {reviewMode && quizResults && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        {quizResults.detailedResults[currentQuestionIndex]?.isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                        )}
+                        <span className={`font-medium ${
+                          quizResults.detailedResults[currentQuestionIndex]?.isCorrect 
+                            ? 'text-green-800' 
+                            : 'text-red-800'
+                        }`}>
+                          {quizResults.detailedResults[currentQuestionIndex]?.isCorrect 
+                            ? 'Correct!' 
+                            : 'Incorrect'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <p><strong>Your answer:</strong> {quizResults.detailedResults[currentQuestionIndex]?.userAnswer || 'No answer'}</p>
+                        <p><strong>Correct answer:</strong> {quizResults.detailedResults[currentQuestionIndex]?.correctAnswer}</p>
+                        {quizResults.detailedResults[currentQuestionIndex]?.explanation && (
+                          <p className="mt-2"><strong>Explanation:</strong> {quizResults.detailedResults[currentQuestionIndex].explanation}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   {currentQuestion.hints && currentQuestion.hints.length > 0 && (
                     <div className="mb-4">
@@ -430,7 +565,26 @@ export default function Quiz() {
                 ))}
               </div>
 
-              {isLastQuestion ? (
+              {reviewMode ? (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={goToDashboard}
+                    className="btn-secondary flex items-center"
+                  >
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </button>
+                  {!isLastQuestion && (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="btn-primary flex items-center"
+                    >
+                      Next
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </button>
+                  )}
+                </div>
+              ) : isLastQuestion ? (
                 <button
                   onClick={handleSubmitQuiz}
                   disabled={!selectedAnswer || submitting}
@@ -455,6 +609,8 @@ export default function Quiz() {
               )}
             </div>
           </div>
+            </>
+          )}
 
           {/* AI Features */}
           <div className="card bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
