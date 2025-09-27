@@ -163,10 +163,22 @@ export default function Materials() {
 
   const handleMaterialDelete = (material) => {
     if (confirm(`Are you sure you want to delete "${material.filename}"?`)) {
+      // Remove from UI state
       setMaterials(prev => prev.filter(m => m.id !== material.id))
+      
+      // Remove from localStorage
+      const storedMaterials = localStorage.getItem('uploadedMaterials')
+      if (storedMaterials) {
+        const materials = JSON.parse(storedMaterials)
+        const updatedMaterials = materials.filter(m => m.id !== material.id)
+        localStorage.setItem('uploadedMaterials', JSON.stringify(updatedMaterials))
+      }
+      
+      // Clear selection if deleted material was selected
       if (selectedMaterial?.id === material.id) {
         setSelectedMaterial(null)
       }
+      
       toast.success('Material deleted successfully')
     }
   }

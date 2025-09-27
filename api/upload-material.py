@@ -241,36 +241,62 @@ def get_enhanced_fallback_analysis(content, filename):
         if not potential_topics:
             potential_topics = ["Main Topic", "Core Concepts", "Key Ideas", "Important Points"]
         
-        # Generate content-specific analysis
+        # Generate content-specific analysis with better data extraction
+        # Extract more meaningful topics from content
+        meaningful_topics = []
+        if 'smart' in content_lower and 'city' in content_lower:
+            meaningful_topics = ["Smart Cities", "Urban Development", "Technology Integration", "Sustainable Development"]
+        elif 'energy' in content_lower:
+            meaningful_topics = ["Energy Systems", "Renewable Energy", "Energy Efficiency", "Power Generation"]
+        elif 'sustainable' in content_lower:
+            meaningful_topics = ["Sustainability", "Environmental Impact", "Green Technology", "Eco-friendly Solutions"]
+        else:
+            meaningful_topics = potential_topics[:4] if potential_topics else ["Main Concepts", "Key Topics", "Important Points", "Core Ideas"]
+        
+        # Generate better learning objectives based on content
+        learning_objectives = [
+            f"Understand the fundamental concepts in {detected_subject}",
+            "Apply theoretical knowledge to practical scenarios",
+            "Analyze the relationships between different concepts",
+            "Evaluate the importance and implications of key topics"
+        ]
+        
+        # Generate better study recommendations
+        study_recommendations = [
+            "Read through the material systematically and take detailed notes",
+            "Create concept maps to visualize relationships between topics",
+            "Practice with real-world examples and case studies",
+            "Review and test your understanding with practice questions"
+        ]
+        
+        # Generate better quiz questions based on content
+        suggested_questions = [
+            {
+                "question": f"What are the main concepts discussed in this {detected_subject} material?",
+                "topic": meaningful_topics[0] if meaningful_topics else "General Concepts",
+                "difficulty": "easy"
+            },
+            {
+                "question": f"How would you apply the principles from this {detected_subject} content in a real-world scenario?",
+                "topic": meaningful_topics[1] if len(meaningful_topics) > 1 else "Practical Application",
+                "difficulty": "medium"
+            },
+            {
+                "question": f"What are the key relationships between the topics covered in this material?",
+                "topic": meaningful_topics[2] if len(meaningful_topics) > 2 else "Topic Relationships",
+                "difficulty": "hard"
+            }
+        ]
+        
         return {
-            "summary": f"This {detected_subject} material contains {word_count} words covering key concepts and principles. The content appears to focus on fundamental understanding and practical application.",
-            "key_topics": potential_topics[:4],
-            "key_concepts": ["Core Principles", "Fundamental Concepts", "Key Ideas", "Main Principles"][:3],
+            "summary": f"This {detected_subject} material contains {word_count} words covering key concepts and principles. The content focuses on {', '.join(meaningful_topics[:2])} and provides insights into practical applications and theoretical foundations.",
+            "key_topics": meaningful_topics,
+            "key_concepts": ["Fundamental Principles", "Core Concepts", "Key Applications", "Important Relationships"][:3],
             "difficulty_level": difficulty,
             "subject_category": detected_subject,
-            "learning_objectives": [
-                f"Understand the main concepts in {detected_subject}",
-                "Apply the principles to practical situations",
-                "Analyze and evaluate the key ideas presented"
-            ],
-            "study_recommendations": [
-                "Read through the material carefully and take notes",
-                "Identify the main concepts and their relationships",
-                "Practice applying the concepts with examples",
-                "Review and summarize the key points"
-            ],
-            "suggested_quiz_questions": [
-                {
-                    "question": f"What is the main focus of this {detected_subject} material?",
-                    "topic": potential_topics[0] if potential_topics else "General",
-                    "difficulty": "easy"
-                },
-                {
-                    "question": f"Explain one key concept from this {detected_subject} content",
-                    "topic": potential_topics[1] if len(potential_topics) > 1 else "Core Concepts",
-                    "difficulty": "medium"
-                }
-            ]
+            "learning_objectives": learning_objectives,
+            "study_recommendations": study_recommendations,
+            "suggested_quiz_questions": suggested_questions
         }
         
     except Exception as e:
