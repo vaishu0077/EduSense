@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Brain,
   Lightbulb,
-  GraduationCap
+  GraduationCap,
+  User
 } from 'lucide-react'
 import { textToSpeech, speechToText } from '../utils/accessibility'
 import toast from 'react-hot-toast'
@@ -237,12 +238,21 @@ export default function Quiz() {
               <GraduationCap className="h-8 w-8 text-primary-600" />
               <span className="ml-2 text-xl font-bold text-gray-900">EduSense</span>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Back to Dashboard
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/profile')}
+                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700"
+              >
+                <User className="w-4 h-4" />
+                <span>Profile</span>
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </nav>

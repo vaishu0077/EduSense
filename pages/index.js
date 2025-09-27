@@ -12,7 +12,8 @@ import {
   Play,
   BarChart3,
   Target,
-  Zap
+  Zap,
+  User
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -128,10 +129,11 @@ export default function Dashboard() {
                 Welcome back, {user.user_metadata?.full_name || user.email}
               </div>
               <button
-                onClick={() => router.push('/auth')}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+                onClick={() => router.push('/profile')}
+                className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
               >
-                Profile
+                <User className="w-4 h-4" />
+                <span>Profile</span>
               </button>
             </div>
           </div>
