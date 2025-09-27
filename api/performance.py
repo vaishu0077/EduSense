@@ -4,6 +4,7 @@ Vercel serverless function to handle performance tracking and analytics
 
 import os
 import json
+from http.server import BaseHTTPRequestHandler
 from supabase import create_client, Client
 
 # Initialize Supabase client
@@ -15,32 +16,116 @@ if supabase_url and supabase_key:
 else:
     supabase = None
 
+class handler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        """Handle CORS preflight requests"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-ID')
+        self.end_headers()
+
+    def do_GET(self):
+        """Handle GET requests for performance data"""
+        try:
+            # Get user ID from headers
+            user_id = self.headers.get('X-User-ID', 'demo-user')
+            
+            # Get performance data
+            performance_data = get_performance_data(user_id)
+            
+            # Always return data, even if empty
+            if performance_data is None:
+                performance_data = get_empty_performance_data()
+            
+            # Send response
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(performance_data).encode('utf-8'))
+            
+        except Exception as e:
+            print(f"Performance GET error: {e}")
+            # Return empty data instead of error
+            empty_data = get_empty_performance_data()
+            empty_data["error"] = f"API Error: {str(e)}"
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(empty_data).encode('utf-8'))
+
+    def do_POST(self):
+        """Handle POST requests for saving quiz results"""
+        try:
+            # Read request body
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            
+            # Parse JSON data
+            try:
+                data = json.loads(post_data.decode('utf-8')) if post_data else {}
+            except:
+                data = {}
+            
+            # Extract user ID from headers or data
+            user_id = self.headers.get('X-User-ID', data.get('user_id', 'demo-user'))
+            
+            # Save quiz result
+            result = save_quiz_result(user_id, data)
+            
+            # Send response
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(result).encode('utf-8'))
+            
+        except Exception as e:
+            print(f"Performance POST error: {e}")
+            error_result = {
+                "success": False,
+                "error": str(e)
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(error_result).encode('utf-8'))
+
+def get_empty_performance_data():
+    """Return empty performance data structure"""
+    return {
+        "overall_score": 0,
+        "topics_studied": 0,
+        "total_time": 0,
+        "quizzes_completed": 0,
+        "topics_mastered": 0,
+        "active_paths": 0,
+        "recent_activities": [],
+        "weaknesses": [],
+        "strengths": [],
+        "performance_over_time": [],
+        "subject_performance": [],
+        "topic_mastery": [],
+        "weekly_activity": [],
+        "recent_topics": [],
+        "stats": {
+            "completed_quizzes": 0,
+            "average_score": 0,
+            "study_streak": 0,
+            "total_study_time": 0
+        }
+    }
+
 def get_performance_data(user_id):
     """Get performance data for a user"""
     if not supabase:
         # Return empty data structure when Supabase is not configured
-        return {
-            "overall_score": 0,
-            "topics_studied": 0,
-            "total_time": 0,
-            "quizzes_completed": 0,
-            "topics_mastered": 0,
-            "active_paths": 0,
-            "recent_activities": [],
-            "weaknesses": [],
-            "strengths": [],
-            "performance_over_time": [],
-            "subject_performance": [],
-            "topic_mastery": [],
-            "weekly_activity": [],
-            "recent_topics": [],
-            "stats": {
-                "completed_quizzes": 0,
-                "average_score": 0,
-                "study_streak": 0,
-                "total_study_time": 0
-            }
-        }
+        return get_empty_performance_data()
     
     try:
         # Get performance data from Supabase
@@ -49,28 +134,7 @@ def get_performance_data(user_id):
         performances = performance_response.data
         
         if not performances:
-            return {
-                "overall_score": 0,
-                "topics_studied": 0,
-                "total_time": 0,
-                "quizzes_completed": 0,
-                "topics_mastered": 0,
-                "active_paths": 0,
-                "recent_activities": [],
-                "weaknesses": [],
-                "strengths": [],
-                "performance_over_time": [],
-                "subject_performance": [],
-                "topic_mastery": [],
-                "weekly_activity": [],
-                "recent_topics": [],
-                "stats": {
-                    "completed_quizzes": 0,
-                    "average_score": 0,
-                    "study_streak": 0,
-                    "total_study_time": 0
-                }
-            }
+            return get_empty_performance_data()
         
         # Calculate metrics
         total_score = sum(p.get('score', 0) for p in performances)
@@ -162,7 +226,7 @@ def get_performance_data(user_id):
         
     except Exception as e:
         print(f"Error getting performance data: {e}")
-        return None
+        return get_empty_performance_data()
 
 def save_quiz_result(user_id, data):
     """Save quiz results to database"""
@@ -213,130 +277,4 @@ def save_quiz_result(user_id, data):
         return {
             "success": False,
             "error": str(e)
-        }
-
-def handler(request):
-    """Main handler function for Vercel"""
-    try:
-        # Handle different request formats
-        method = getattr(request, 'method', 'GET')
-        headers = getattr(request, 'headers', {})
-        body = getattr(request, 'body', None)
-        
-        # Handle CORS
-        if method == 'OPTIONS':
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-ID',
-                },
-                'body': ''
-            }
-        
-        if method == 'GET':
-            # Get user ID from headers or use demo user
-            user_id = headers.get('X-User-ID', 'demo-user')
-            
-            # Get performance data
-            performance_data = get_performance_data(user_id)
-            
-            # Always return data, even if empty
-            if performance_data is None:
-                performance_data = {
-                    "overall_score": 0,
-                    "topics_studied": 0,
-                    "total_time": 0,
-                    "quizzes_completed": 0,
-                    "topics_mastered": 0,
-                    "active_paths": 0,
-                    "recent_activities": [],
-                    "weaknesses": [],
-                    "strengths": [],
-                    "performance_over_time": [],
-                    "subject_performance": [],
-                    "topic_mastery": [],
-                    "weekly_activity": [],
-                    "recent_topics": [],
-                    "stats": {
-                        "completed_quizzes": 0,
-                        "average_score": 0,
-                        "study_streak": 0,
-                        "total_study_time": 0
-                    }
-                }
-            
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps(performance_data)
-            }
-        
-        elif method == 'POST':
-            # Parse request body
-            if isinstance(body, str):
-                data = json.loads(body)
-            else:
-                data = body or {}
-            
-            # Extract user ID from headers or data
-            user_id = headers.get('X-User-ID', data.get('user_id', 'demo-user'))
-            
-            # Save quiz result
-            result = save_quiz_result(user_id, data)
-            
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps(result)
-            }
-        
-        else:
-            return {
-                'statusCode': 405,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'error': 'Method not allowed'})
-            }
-            
-    except Exception as e:
-        print(f"Performance API Error: {e}")
-        return {
-            'statusCode': 200,  # Return 200 with empty data instead of 500
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps({
-                "overall_score": 0,
-                "topics_studied": 0,
-                "total_time": 0,
-                "quizzes_completed": 0,
-                "topics_mastered": 0,
-                "active_paths": 0,
-                "recent_activities": [],
-                "weaknesses": [],
-                "strengths": [],
-                "performance_over_time": [],
-                "subject_performance": [],
-                "topic_mastery": [],
-                "weekly_activity": [],
-                "recent_topics": [],
-                "stats": {
-                    "completed_quizzes": 0,
-                    "average_score": 0,
-                    "study_streak": 0,
-                    "total_study_time": 0
-                },
-                "error": f"API Error: {str(e)}"
-            })
         }
