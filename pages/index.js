@@ -15,6 +15,11 @@ import {
   Zap,
   User
 } from 'lucide-react'
+import AIInsights from '../components/AIInsights'
+import RealtimeNotifications from '../components/RealtimeNotifications'
+import RealtimeAnalytics from '../components/RealtimeAnalytics'
+import RealtimeProgress from '../components/RealtimeProgress'
+import LiveChat from '../components/LiveChat'
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
@@ -128,6 +133,7 @@ export default function Dashboard() {
               <div className="text-sm text-gray-500">
                 Welcome back, {user.user_metadata?.full_name || user.email}
               </div>
+              <RealtimeNotifications />
               <button
                 onClick={() => router.push('/profile')}
                 className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -257,6 +263,21 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Real-time Analytics */}
+        <div className="mt-8">
+          <RealtimeAnalytics />
+        </div>
+
+        {/* Real-time Progress */}
+        <div className="mt-8">
+          <RealtimeProgress />
+        </div>
+
+        {/* AI Insights */}
+        <div className="mt-8">
+          <AIInsights />
+        </div>
+
         {/* AI Recommendations */}
         <div className="mt-8">
           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
@@ -280,6 +301,9 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Live Chat */}
+      <LiveChat />
     </div>
   )
 }

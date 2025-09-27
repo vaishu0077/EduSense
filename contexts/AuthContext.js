@@ -29,12 +29,51 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Initialize user from localStorage on mount
   useEffect(() => {
+    const savedUser = localStorage.getItem('edusense_user')
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser))
+        setLoading(false) // Set loading to false immediately if we have saved user
+      } catch (error) {
+        console.error('Error parsing saved user:', error)
+        localStorage.removeItem('edusense_user')
+        setLoading(false)
+      }
+    } else {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    let isInitialLoad = true
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-      setLoading(false)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const sessionUser = session?.user || null
+        
+        // Only update if we don't have a user from localStorage or if session user is different
+        setUser(prevUser => {
+          if (!prevUser && sessionUser) {
+            return sessionUser
+          } else if (prevUser && !sessionUser) {
+            return null
+          } else if (prevUser?.id !== sessionUser?.id) {
+            return sessionUser
+          }
+          return prevUser
+        })
+        
+        setLoading(false)
+        isInitialLoad = false
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+        setLoading(false)
+        isInitialLoad = false
+      }
     }
 
     getInitialSession()
@@ -42,16 +81,41 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user || null)
+        const newUser = session?.user || null
+        
+        // Only update state if user actually changed
+        setUser(prevUser => {
+          if (prevUser?.id === newUser?.id) {
+            return prevUser // No change, return same user object
+          }
+          return newUser
+        })
+        
         setLoading(false)
 
-        if (event === 'SIGNED_IN') {
+        // Persist user data to localStorage
+        if (newUser) {
+          localStorage.setItem('edusense_user', JSON.stringify(newUser))
+        } else {
+          localStorage.removeItem('edusense_user')
+        }
+
+        // Only show messages and redirects for actual auth events, not session refreshes
+        if (event === 'SIGNED_IN' && !isInitialLoad) {
           toast.success('Welcome to EduSense!')
-          router.push('/')
+          // Only redirect if not already on dashboard
+          if (router.pathname !== '/') {
+            router.push('/')
+          }
         } else if (event === 'SIGNED_OUT') {
           toast.success('Logged out successfully')
-          router.push('/auth')
+          // Only redirect if not already on auth page
+          if (router.pathname !== '/auth') {
+            router.push('/auth')
+          }
         }
+        
+        isInitialLoad = false
       }
     )
 

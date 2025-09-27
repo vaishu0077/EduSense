@@ -32,13 +32,25 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
   }
 
   const handleFiles = (newFiles) => {
+    const maxFileSize = 4 * 1024 * 1024 // 4MB limit
+    
     const validFiles = newFiles.filter(file => {
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
-      return acceptedTypes.includes(fileExtension)
+      const isAcceptedType = acceptedTypes.includes(fileExtension)
+      const isWithinSizeLimit = file.size <= maxFileSize
+      
+      if (!isAcceptedType) {
+        toast.error(`${file.name}: Unsupported file type`)
+      }
+      if (!isWithinSizeLimit) {
+        toast.error(`${file.name}: File too large (max 4MB)`)
+      }
+      
+      return isAcceptedType && isWithinSizeLimit
     })
 
     if (validFiles.length !== newFiles.length) {
-      toast.error('Some files were rejected. Only PDF, DOC, DOCX, and TXT files are allowed.')
+      toast.error('Some files were rejected. Check file types and sizes.')
     }
 
     if (validFiles.length + files.length > maxFiles) {
@@ -68,24 +80,35 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
     try {
       setUploading(true)
       
-      const formData = new FormData()
-      formData.append('file', fileItem.file)
-      formData.append('filename', fileItem.name)
+      // Read file content as text (for text-based files)
+      const content = await readFileAsText(fileItem.file)
+      
+      // Prepare data for API
+      const uploadData = {
+        filename: fileItem.name,
+        content: content,
+        type: fileItem.type,
+        user_id: 'demo-user' // This should come from auth context
+      }
 
       const response = await fetch('/api/upload-material', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(uploadData)
       })
 
       if (!response.ok) {
-        throw new Error('Upload failed')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Upload failed')
       }
 
       const result = await response.json()
       
       // Update file status
       setFiles(prev => prev.map(f => 
-        f.id === fileId 
+        f.id === fileItem.id 
           ? { ...f, status: 'completed', progress: 100, result }
           : f
       ))
@@ -100,21 +123,37 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
       console.error('Upload error:', error)
       
       setFiles(prev => prev.map(f => 
-        f.id === fileId 
+        f.id === fileItem.id 
           ? { ...f, status: 'error', error: error.message }
           : f
       ))
 
-      toast.error(`Failed to upload ${fileItem.name}`)
+      toast.error(`Failed to upload ${fileItem.name}: ${error.message}`)
     } finally {
       setUploading(false)
     }
+  }
+
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => resolve(e.target.result)
+      reader.onerror = (e) => reject(e)
+      reader.readAsText(file)
+    })
   }
 
   const uploadAllFiles = async () => {
     const pendingFiles = files.filter(f => f.status === 'pending')
     
     for (const fileItem of pendingFiles) {
+      // Update status to uploading
+      setFiles(prev => prev.map(f => 
+        f.id === fileItem.id 
+          ? { ...f, status: 'uploading', progress: 0 }
+          : f
+      ))
+      
       await uploadFile(fileItem)
     }
   }
@@ -168,7 +207,7 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
           Drag and drop files here, or click to select files
         </p>
         <p className="text-sm text-gray-500 mb-4">
-          Supported formats: PDF, DOC, DOCX, TXT (Max {maxFiles} files)
+          Supported formats: PDF, DOC, DOCX, TXT (Max {maxFiles} files, 4MB each)
         </p>
         
         <button
