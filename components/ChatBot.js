@@ -76,48 +76,96 @@ export default function ChatBot() {
   const generateBotResponse = async (userMessage) => {
     const message = userMessage.toLowerCase();
     
-    // Study tips and strategies
-    if (message.includes('study') || message.includes('learn') || message.includes('prepare')) {
-      return "Here are some effective study strategies:\n\n📚 **Active Learning**: Try explaining concepts out loud or teaching someone else\n⏰ **Pomodoro Technique**: Study for 25 minutes, then take a 5-minute break\n🎯 **Spaced Repetition**: Review material at increasing intervals\n📝 **Practice Testing**: Take quizzes and practice problems regularly\n\nWould you like me to help you create a study schedule?";
+    // First, try to match with predefined educational topics
+    const educationalKeywords = [
+      'study', 'learn', 'prepare', 'quiz', 'test', 'exam', 'performance', 'score', 'progress',
+      'path', 'plan', 'schedule', 'help', 'math', 'mathematics', 'calculus', 'science', 'physics',
+      'chemistry', 'motivation', 'encourage', 'difficult', 'homework', 'assignment', 'grade',
+      'subject', 'topic', 'concept', 'understand', 'explain', 'practice', 'review', 'notes'
+    ];
+    
+    const isEducationalQuery = educationalKeywords.some(keyword => message.includes(keyword));
+    
+    if (isEducationalQuery) {
+      // Handle educational queries with predefined responses
+      if (message.includes('study') || message.includes('learn') || message.includes('prepare')) {
+        return "Here are some effective study strategies:\n\n📚 **Active Learning**: Try explaining concepts out loud or teaching someone else\n⏰ **Pomodoro Technique**: Study for 25 minutes, then take a 5-minute break\n🎯 **Spaced Repetition**: Review material at increasing intervals\n📝 **Practice Testing**: Take quizzes and practice problems regularly\n\nWould you like me to help you create a study schedule?";
+      }
+      
+      if (message.includes('quiz') || message.includes('test') || message.includes('exam')) {
+        return "Great! Here's how to prepare for your quiz:\n\n🔍 **Review Key Concepts**: Focus on main topics and important details\n📊 **Take Practice Quizzes**: Use the quiz feature to test your knowledge\n📖 **Study Materials**: Review your uploaded materials and notes\n⏰ **Time Management**: Allocate time for each topic based on difficulty\n\nI can help you generate a practice quiz on any topic. What subject would you like to focus on?";
+      }
+      
+      if (message.includes('performance') || message.includes('score') || message.includes('progress')) {
+        return "Let me help you analyze your performance:\n\n📈 **Track Your Progress**: Monitor your quiz scores over time\n🎯 **Identify Weak Areas**: Focus on topics where you score lower\n📊 **Set Goals**: Aim for consistent improvement in each subject\n🔄 **Regular Practice**: Consistent practice leads to better performance\n\nWould you like me to suggest specific areas for improvement based on your recent performance?";
+      }
+      
+      if (message.includes('path') || message.includes('plan') || message.includes('schedule')) {
+        return "I can help you create a personalized learning path:\n\n🎯 **Set Clear Goals**: Define what you want to achieve\n📚 **Choose Subjects**: Select the topics you want to focus on\n⏰ **Allocate Time**: Plan your study sessions effectively\n📈 **Track Progress**: Monitor your improvement over time\n\nWhat subjects are you most interested in learning?";
+      }
+      
+      if (message.includes('help') || message.includes('what can you do')) {
+        return "I'm here to help you with your learning journey! I can assist with:\n\n📚 **Study Strategies**: Tips for effective learning\n🎯 **Quiz Preparation**: Help you prepare for tests\n📊 **Performance Analysis**: Track your progress\n🗺️ **Learning Paths**: Create personalized study plans\n💡 **Study Tips**: General advice for better learning\n\nJust ask me anything about your studies!";
+      }
+      
+      if (message.includes('math') || message.includes('mathematics') || message.includes('calculus')) {
+        return "Mathematics can be challenging, but here are some tips:\n\n🔢 **Practice Regularly**: Math requires consistent practice\n📐 **Understand Concepts**: Don't just memorize formulas\n🧮 **Work Through Examples**: Solve problems step by step\n📊 **Use Visual Aids**: Graphs and diagrams help understanding\n\nWould you like me to suggest some practice problems or explain a specific concept?";
+      }
+      
+      if (message.includes('science') || message.includes('physics') || message.includes('chemistry')) {
+        return "Science subjects require both theory and practice:\n\n🧪 **Understand Principles**: Focus on fundamental concepts\n🔬 **Visual Learning**: Use diagrams and models\n📚 **Connect Ideas**: Link different concepts together\n🧮 **Practice Problems**: Work through numerical problems\n\nWhat specific science topic would you like help with?";
+      }
+      
+      if (message.includes('motivation') || message.includes('encourage') || message.includes('difficult')) {
+        return "Learning can be challenging, but you're doing great! Here's some motivation:\n\n🌟 **Every Expert Was Once a Beginner**: Don't be discouraged by initial difficulties\n🎯 **Small Steps Lead to Big Results**: Consistent effort pays off\n📈 **Progress Over Perfection**: Focus on improvement, not perfection\n💪 **You've Got This**: Believe in your ability to learn and grow\n\nRemember, every question you ask and every problem you solve makes you stronger!";
+      }
     }
     
-    // Quiz preparation
-    if (message.includes('quiz') || message.includes('test') || message.includes('exam')) {
-      return "Great! Here's how to prepare for your quiz:\n\n🔍 **Review Key Concepts**: Focus on main topics and important details\n📊 **Take Practice Quizzes**: Use the quiz feature to test your knowledge\n📖 **Study Materials**: Review your uploaded materials and notes\n⏰ **Time Management**: Allocate time for each topic based on difficulty\n\nI can help you generate a practice quiz on any topic. What subject would you like to focus on?";
+    // For non-educational queries, use AI to provide helpful responses
+    try {
+      const aiResponse = await getAIResponse(userMessage);
+      return aiResponse;
+    } catch (error) {
+      console.error('AI response error:', error);
+      // Fallback to educational guidance
+      return "I understand you're asking about something outside my educational focus. As your EduSense AI assistant, I'm specialized in helping with:\n\n📚 **Study Strategies**: Tips for effective learning\n🎯 **Quiz Preparation**: Help you prepare for tests\n📊 **Performance Analysis**: Track your progress\n🗺️ **Learning Paths**: Create personalized study plans\n💡 **Academic Support**: Subject-specific help\n\nIs there anything about your studies I can help you with instead?";
     }
-    
-    // Performance analysis
-    if (message.includes('performance') || message.includes('score') || message.includes('progress')) {
-      return "Let me help you analyze your performance:\n\n📈 **Track Your Progress**: Monitor your quiz scores over time\n🎯 **Identify Weak Areas**: Focus on topics where you score lower\n📊 **Set Goals**: Aim for consistent improvement in each subject\n🔄 **Regular Practice**: Consistent practice leads to better performance\n\nWould you like me to suggest specific areas for improvement based on your recent performance?";
+  };
+
+  const getAIResponse = async (userMessage) => {
+    try {
+      // Use the AI services API to get intelligent responses
+      const response = await fetch(`/api/ai-services?service=chatbot&message=${encodeURIComponent(userMessage)}&user_id=demo-user`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('AI service unavailable');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        if (data.is_educational) {
+          // Educational query - provide specific help
+          return `${data.response}\n\n${data.suggestions.map(suggestion => `• ${suggestion}`).join('\n')}\n\nWhat specific area would you like help with?`;
+        } else {
+          // Non-educational query - redirect to educational scope
+          const scopeList = data.educational_scope.map(item => `• ${item}`).join('\n');
+          return `${data.response}\n\n${scopeList}\n\n${data.redirect_message}`;
+        }
+      }
+      
+      // Fallback response
+      return "I understand you're asking about something outside my educational focus. As your EduSense AI assistant, I'm specialized in helping with:\n\n📚 **Study Strategies**: Tips for effective learning\n🎯 **Quiz Preparation**: Help you prepare for tests\n📊 **Performance Analysis**: Track your progress\n🗺️ **Learning Paths**: Create personalized study plans\n💡 **Academic Support**: Subject-specific help\n\nIs there anything about your studies I can help you with instead?";
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      throw error;
     }
-    
-    // Learning paths
-    if (message.includes('path') || message.includes('plan') || message.includes('schedule')) {
-      return "I can help you create a personalized learning path:\n\n🎯 **Set Clear Goals**: Define what you want to achieve\n📚 **Choose Subjects**: Select the topics you want to focus on\n⏰ **Allocate Time**: Plan your study sessions effectively\n📈 **Track Progress**: Monitor your improvement over time\n\nWhat subjects are you most interested in learning?";
-    }
-    
-    // General help
-    if (message.includes('help') || message.includes('what can you do')) {
-      return "I'm here to help you with your learning journey! I can assist with:\n\n📚 **Study Strategies**: Tips for effective learning\n🎯 **Quiz Preparation**: Help you prepare for tests\n📊 **Performance Analysis**: Track your progress\n🗺️ **Learning Paths**: Create personalized study plans\n💡 **Study Tips**: General advice for better learning\n\nJust ask me anything about your studies!";
-    }
-    
-    // Math and science help
-    if (message.includes('math') || message.includes('mathematics') || message.includes('calculus')) {
-      return "Mathematics can be challenging, but here are some tips:\n\n🔢 **Practice Regularly**: Math requires consistent practice\n📐 **Understand Concepts**: Don't just memorize formulas\n🧮 **Work Through Examples**: Solve problems step by step\n📊 **Use Visual Aids**: Graphs and diagrams help understanding\n\nWould you like me to suggest some practice problems or explain a specific concept?";
-    }
-    
-    // Science help
-    if (message.includes('science') || message.includes('physics') || message.includes('chemistry')) {
-      return "Science subjects require both theory and practice:\n\n🧪 **Understand Principles**: Focus on fundamental concepts\n🔬 **Visual Learning**: Use diagrams and models\n📚 **Connect Ideas**: Link different concepts together\n🧮 **Practice Problems**: Work through numerical problems\n\nWhat specific science topic would you like help with?";
-    }
-    
-    // Motivation and encouragement
-    if (message.includes('motivation') || message.includes('encourage') || message.includes('difficult')) {
-      return "Learning can be challenging, but you're doing great! Here's some motivation:\n\n🌟 **Every Expert Was Once a Beginner**: Don't be discouraged by initial difficulties\n🎯 **Small Steps Lead to Big Results**: Consistent effort pays off\n📈 **Progress Over Perfection**: Focus on improvement, not perfection\n💪 **You've Got This**: Believe in your ability to learn and grow\n\nRemember, every question you ask and every problem you solve makes you stronger!";
-    }
-    
-    // Default response
-    return "That's an interesting question! I'm here to help you with your studies. You can ask me about:\n\n• Study strategies and tips\n• Quiz preparation\n• Learning paths\n• Performance analysis\n• Specific subject help\n• Motivation and encouragement\n\nWhat would you like to know more about?";
   };
 
   const clearChat = () => {

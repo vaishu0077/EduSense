@@ -43,8 +43,10 @@ class handler(BaseHTTPRequestHandler):
                 response_data = self.get_personalized_learning_path(user_id, query_params)
             elif service == 'weakness-detection':
                 response_data = self.get_weakness_detection(user_id, query_params)
+            elif service == 'chatbot':
+                response_data = self.get_chatbot_response(user_id, query_params)
             else:
-                raise ValueError('Invalid service. Use: adaptive-difficulty, ai-insights, content-recommendation, performance-prediction, personalized-learning-path, weakness-detection')
+                raise ValueError('Invalid service. Use: adaptive-difficulty, ai-insights, content-recommendation, performance-prediction, personalized-learning-path, weakness-detection, chatbot')
             
             # Send response
             self.send_response(200)
@@ -217,3 +219,47 @@ class handler(BaseHTTPRequestHandler):
             ],
             "confidence": 0.85
         }
+
+    def get_chatbot_response(self, user_id, query_params):
+        """Generate intelligent chatbot responses for non-educational queries"""
+        user_message = query_params.get('message', [''])[0]
+        
+        # Educational scope keywords
+        educational_keywords = [
+            'study', 'learn', 'prepare', 'quiz', 'test', 'exam', 'performance', 'score', 'progress',
+            'path', 'plan', 'schedule', 'help', 'math', 'mathematics', 'calculus', 'science', 'physics',
+            'chemistry', 'motivation', 'encourage', 'difficult', 'homework', 'assignment', 'grade',
+            'subject', 'topic', 'concept', 'understand', 'explain', 'practice', 'review', 'notes'
+        ]
+        
+        # Check if the message is educational
+        is_educational = any(keyword in user_message.lower() for keyword in educational_keywords)
+        
+        if is_educational:
+            return {
+                "success": True,
+                "response": "I can help you with that! As your EduSense AI assistant, I specialize in educational support.",
+                "is_educational": True,
+                "suggestions": [
+                    "Study strategies and tips",
+                    "Quiz preparation",
+                    "Learning path guidance",
+                    "Performance analysis",
+                    "Subject-specific help"
+                ]
+            }
+        else:
+            # For non-educational queries, provide helpful guidance
+            return {
+                "success": True,
+                "response": f"I understand you're asking about '{user_message}', but as your EduSense AI assistant, I'm specialized in helping with your studies. I can assist you with:",
+                "is_educational": False,
+                "educational_scope": [
+                    "📚 Study Strategies: Tips for effective learning",
+                    "🎯 Quiz Preparation: Help you prepare for tests", 
+                    "📊 Performance Analysis: Track your progress",
+                    "🗺️ Learning Paths: Create personalized study plans",
+                    "💡 Academic Support: Subject-specific help"
+                ],
+                "redirect_message": "Is there anything about your studies I can help you with instead?"
+            }
