@@ -24,6 +24,7 @@ export default function Dashboard() {
     studyStreak: 0,
     totalStudyTime: 0
   })
+  const [analytics, setAnalytics] = useState(null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -34,6 +35,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchUserStats()
+      fetchAnalytics()
     }
   }, [user])
 
@@ -51,6 +53,23 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
+    }
+  }
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch('/api/performance', {
+        headers: {
+          'Authorization': `Bearer ${user.session?.access_token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
     }
   }
 
