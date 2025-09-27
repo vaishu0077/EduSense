@@ -12,6 +12,7 @@ export default function CreateQuiz() {
     title: '',
     topic: '',
     difficulty: 'medium',
+    numQuestions: 5,
     questions: [
       {
         question: '',
@@ -97,7 +98,7 @@ export default function CreateQuiz() {
         body: JSON.stringify({
           topic: quizData.topic,
           difficulty: quizData.difficulty,
-          num_questions: 5
+          num_questions: quizData.numQuestions
         })
       })
 
@@ -219,6 +220,20 @@ export default function CreateQuiz() {
                   <option value="medium">Medium</option>
                   <option value="hard">Hard</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={quizData.numQuestions}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, numQuestions: parseInt(e.target.value) || 5 }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
               </div>
 
               <div className="flex items-end">

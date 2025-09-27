@@ -105,6 +105,25 @@ export default function Materials() {
   const handleFileUpload = (uploadResult) => {
     console.log('File uploaded:', uploadResult)
     toast.success('Material uploaded and analyzed successfully!')
+    
+    // Add the new material to the list immediately
+    if (uploadResult.success) {
+      const newMaterial = {
+        id: uploadResult.material_id,
+        filename: uploadResult.filename,
+        file_type: uploadResult.file_type,
+        content: uploadResult.content_preview,
+        ai_analysis: uploadResult.ai_analysis,
+        word_count: uploadResult.word_count,
+        char_count: uploadResult.char_count,
+        starred: false,
+        tags: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      setMaterials(prev => [newMaterial, ...prev])
+    }
+    
     loadMaterials() // Reload materials
     setShowUpload(false)
   }
