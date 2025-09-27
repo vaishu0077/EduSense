@@ -121,17 +121,25 @@ def analyze_content_with_ai_simple(content, filename):
         
         Content: {content[:1500]}...
         
-        Provide a brief analysis in JSON format:
+        Provide a comprehensive analysis in JSON format:
         {{
-            "summary": "Brief summary (2-3 sentences)",
-            "key_topics": ["topic1", "topic2"],
+            "summary": "Detailed summary (2-3 sentences explaining the main concepts)",
+            "key_topics": ["topic1", "topic2", "topic3", "topic4"],
+            "key_concepts": ["concept1", "concept2", "concept3"],
             "difficulty_level": "beginner|intermediate|advanced",
-            "subject_category": "mathematics|science|history|general",
-            "learning_objectives": ["objective1", "objective2"],
-            "study_recommendations": ["recommendation1", "recommendation2"]
+            "subject_category": "mathematics|science|history|english|physics|chemistry|biology|general",
+            "learning_objectives": ["objective1", "objective2", "objective3"],
+            "study_recommendations": ["recommendation1", "recommendation2", "recommendation3"],
+            "suggested_quiz_questions": [
+                {{
+                    "question": "Sample question based on content",
+                    "topic": "related topic",
+                    "difficulty": "easy|medium|hard"
+                }}
+            ]
         }}
         
-        Keep responses concise and educational.
+        Make the analysis educational and comprehensive. Include specific topics and concepts from the content.
         """
         
         response = model.generate_content(prompt)
@@ -143,23 +151,39 @@ def analyze_content_with_ai_simple(content, filename):
         except json.JSONDecodeError:
             # Fallback if JSON parsing fails
             return {
-                "summary": "Educational material uploaded successfully",
-                "key_topics": ["General"],
+                "summary": "Educational material uploaded successfully. Content analysis in progress.",
+                "key_topics": ["General Topics", "Core Concepts"],
+                "key_concepts": ["Main Concepts", "Important Ideas"],
                 "difficulty_level": "intermediate",
                 "subject_category": "general",
-                "learning_objectives": ["Understand the material"],
-                "study_recommendations": ["Review the material thoroughly"]
+                "learning_objectives": ["Understand the material", "Apply key concepts"],
+                "study_recommendations": ["Review the material thoroughly", "Practice with examples"],
+                "suggested_quiz_questions": [
+                    {
+                        "question": "What is the main topic of this material?",
+                        "topic": "General",
+                        "difficulty": "easy"
+                    }
+                ]
             }
             
     except Exception as e:
         print(f"AI analysis error: {e}")
         return {
-            "summary": "Content analysis unavailable",
-            "key_topics": ["General"],
+            "summary": "Content analysis unavailable. Please try uploading again.",
+            "key_topics": ["General Topics"],
+            "key_concepts": ["Core Concepts"],
             "difficulty_level": "intermediate",
             "subject_category": "general",
             "learning_objectives": ["Understand the material"],
-            "study_recommendations": ["Review the material thoroughly"]
+            "study_recommendations": ["Review the material thoroughly"],
+            "suggested_quiz_questions": [
+                {
+                    "question": "What is the main topic of this material?",
+                    "topic": "General",
+                    "difficulty": "easy"
+                }
+            ]
         }
 
 def save_material_to_db_simple(filename, content, ai_analysis, user_id):
