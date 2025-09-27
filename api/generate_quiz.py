@@ -37,11 +37,14 @@ class handler(BaseHTTPRequestHandler):
             topic = data.get('topic', 'Mathematics')
             difficulty = data.get('difficulty', 'medium')
             num_questions = int(data.get('num_questions', 5))
+            material_content = data.get('material_content', '')
+            ai_analysis = data.get('ai_analysis', {})
             
             print(f"Generating quiz: topic={topic}, difficulty={difficulty}, num_questions={num_questions}")
+            print(f"Material content length: {len(material_content) if material_content else 0}")
             
-            # Generate quiz
-            result = generate_quiz(topic, difficulty, num_questions)
+            # Generate quiz (with material content if available)
+            result = generate_quiz(topic, difficulty, num_questions, material_content, ai_analysis)
             
             # Send response
             self.send_response(200)
@@ -73,7 +76,7 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps({'error': 'Use POST method'}).encode('utf-8'))
 
-def generate_quiz(topic, difficulty, num_questions):
+def generate_quiz(topic, difficulty, num_questions, material_content='', ai_analysis=None):
     """Generate a quiz using Gemini AI"""
     try:
         # Check if API key is available
@@ -83,8 +86,43 @@ def generate_quiz(topic, difficulty, num_questions):
         
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
-        # Simplified prompt for better reliability
-        prompt = f"""Create a {difficulty} level quiz about {topic} with {num_questions} multiple choice questions.
+        # Create prompt based on whether we have material content
+        if material_content and ai_analysis:
+            # Generate quiz based on actual material content
+            prompt = f"""Create a {difficulty} level quiz based on this study material:
+
+TOPIC: {topic}
+MATERIAL CONTENT: {material_content[:2000]}...
+
+AI ANALYSIS:
+- Key Topics: {ai_analysis.get('key_topics', [])}
+- Learning Objectives: {ai_analysis.get('learning_objectives', [])}
+- Key Concepts: {ai_analysis.get('key_concepts', [])}
+
+Create {num_questions} multiple choice questions that test understanding of the actual content.
+
+Return ONLY a valid JSON object with this exact structure:
+{{
+  "questions": [
+    {{
+      "question": "Your question here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct_answer": 0,
+      "explanation": "Why this answer is correct"
+    }}
+  ]
+}}
+
+Requirements:
+- Each question must have exactly 4 options
+- correct_answer must be 0, 1, 2, or 3 (index of correct option)
+- Base questions on the actual material content provided
+- Test understanding of key concepts from the material
+- Make questions appropriate for {difficulty} difficulty
+- Return only valid JSON, no additional text"""
+        else:
+            # Standard quiz generation
+            prompt = f"""Create a {difficulty} level quiz about {topic} with {num_questions} multiple choice questions.
 
 Return ONLY a valid JSON object with this exact structure:
 {{

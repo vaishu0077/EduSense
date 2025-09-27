@@ -125,7 +125,7 @@ export default function MaterialAnalysis({ material, onGenerateQuiz }) {
         
         {expandedSections.summary && (
           <div className="px-6 pb-6">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed break-words whitespace-pre-wrap">
               {analysis.summary}
             </p>
           </div>
@@ -195,7 +195,7 @@ export default function MaterialAnalysis({ material, onGenerateQuiz }) {
               {analysis.learning_objectives?.map((objective, index) => (
                 <li key={index} className="flex items-start">
                   <Star className="h-4 w-4 text-blue-500 mr-2 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">{objective}</span>
+                  <span className="text-gray-700 break-words whitespace-pre-wrap">{objective}</span>
                 </li>
               ))}
             </ul>
@@ -306,7 +306,7 @@ export default function MaterialAnalysis({ material, onGenerateQuiz }) {
               {analysis.study_recommendations?.map((recommendation, index) => (
                 <li key={index} className="flex items-start">
                   <Clock className="h-4 w-4 text-indigo-500 mr-3 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">{recommendation}</span>
+                  <span className="text-gray-700 break-words whitespace-pre-wrap">{recommendation}</span>
                 </li>
               ))}
             </ul>
