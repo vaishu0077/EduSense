@@ -78,39 +78,11 @@ export default function Progress() {
     )
   }
 
-  // Sample data for charts
-  const performanceOverTime = [
-    { name: 'Week 1', score: 65, time: 120 },
-    { name: 'Week 2', score: 72, time: 150 },
-    { name: 'Week 3', score: 68, time: 140 },
-    { name: 'Week 4', score: 78, time: 180 },
-    { name: 'Week 5', score: 82, time: 200 },
-    { name: 'Week 6', score: 85, time: 220 },
-  ]
-
-  const subjectPerformance = [
-    { subject: 'Mathematics', score: 85, attempts: 12 },
-    { subject: 'Science', score: 72, attempts: 8 },
-    { subject: 'English', score: 78, attempts: 10 },
-    { subject: 'History', score: 65, attempts: 6 },
-  ]
-
-  const topicMastery = [
-    { name: 'Algebra', value: 85, color: '#3b82f6' },
-    { name: 'Geometry', value: 72, color: '#10b981' },
-    { name: 'Biology', value: 78, color: '#f59e0b' },
-    { name: 'Chemistry', value: 65, color: '#ef4444' },
-  ]
-
-  const weeklyActivity = [
-    { day: 'Mon', quizzes: 2, time: 45 },
-    { day: 'Tue', quizzes: 1, time: 30 },
-    { day: 'Wed', quizzes: 3, time: 60 },
-    { day: 'Thu', quizzes: 2, time: 40 },
-    { day: 'Fri', quizzes: 1, time: 25 },
-    { day: 'Sat', quizzes: 4, time: 80 },
-    { day: 'Sun', quizzes: 2, time: 35 },
-  ]
+  // Use real data from API or show empty state
+  const performanceOverTime = progressData?.performance_over_time || []
+  const subjectPerformance = progressData?.subject_performance || []
+  const topicMastery = progressData?.topic_mastery || []
+  const weeklyActivity = progressData?.weekly_activity || []
 
   const stats = [
     {

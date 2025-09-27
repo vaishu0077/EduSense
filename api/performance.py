@@ -18,41 +18,22 @@ else:
 def get_performance_data(user_id):
     """Get performance data for a user"""
     if not supabase:
-        # Return mock data for development
+        # Return empty data structure when Supabase is not configured
         return {
-            "overall_score": 75,
-            "topics_studied": 5,
-            "total_time": 3600,
-            "quizzes_completed": 24,
-            "topics_mastered": 8,
-            "active_paths": 2,
-            "recent_activities": [
-                {
-                    "id": 1,
-                    "type": "quiz_attempt",
-                    "title": "Algebra Quiz",
-                    "topic": "Basic Algebra",
-                    "score": 85,
-                    "timestamp": "2024-01-15T10:30:00Z",
-                    "status": "passed"
-                }
-            ],
-            "weaknesses": [
-                {
-                    "id": 1,
-                    "topic_id": 1,
-                    "severity": "medium",
-                    "description": "Struggling with algebraic equations",
-                    "confidence_score": 0.8
-                }
-            ],
-            "strengths": [
-                {
-                    "topic_id": 2,
-                    "score": 85,
-                    "mastery_level": "intermediate"
-                }
-            ]
+            "overall_score": 0,
+            "topics_studied": 0,
+            "total_time": 0,
+            "quizzes_completed": 0,
+            "topics_mastered": 0,
+            "active_paths": 0,
+            "recent_activities": [],
+            "weaknesses": [],
+            "strengths": [],
+            "performance_over_time": [],
+            "subject_performance": [],
+            "topic_mastery": [],
+            "weekly_activity": [],
+            "recent_topics": []
         }
     
     try:
@@ -88,12 +69,13 @@ def get_performance_data(user_id):
 def save_quiz_result(user_id, quiz_id, responses, time_taken):
     """Save quiz results to database"""
     if not supabase:
-        # Mock response for development
+        # Return error when Supabase is not configured
         return {
-            "success": True,
-            "score": 75,
-            "percentage": 75,
-            "is_passed": True
+            "success": False,
+            "error": "Database not configured. Please set up Supabase environment variables.",
+            "score": 0,
+            "percentage": 0,
+            "is_passed": False
         }
     
     try:

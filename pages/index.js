@@ -90,12 +90,7 @@ export default function Dashboard() {
     }
   ]
 
-  const recentTopics = [
-    { name: 'Mathematics', progress: 85, lastStudied: '2 hours ago' },
-    { name: 'Physics', progress: 72, lastStudied: '1 day ago' },
-    { name: 'Chemistry', progress: 91, lastStudied: '3 days ago' },
-    { name: 'Biology', progress: 68, lastStudied: '1 week ago' }
-  ]
+  const recentTopics = analytics?.recent_topics || []
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
