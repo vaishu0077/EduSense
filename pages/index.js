@@ -15,6 +15,7 @@ import {
   Zap,
   User
 } from 'lucide-react'
+import AIInsights from '../components/AIInsights'
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
@@ -255,6 +256,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* AI Insights */}
+        <div className="mt-8">
+          <AIInsights />
         </div>
 
         {/* AI Recommendations */}
