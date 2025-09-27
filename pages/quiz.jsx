@@ -55,18 +55,32 @@ export default function Quiz() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: 'Mathematics',
-          difficulty: 'medium',
+          topic: router.query.topic || 'Mathematics',
+          difficulty: router.query.difficulty || 'medium',
           num_questions: 5
         })
       })
       
       const data = await response.json()
-      setQuiz(data)
       
-      if (data.time_limit) {
-        setTimeRemaining(data.time_limit * 60)
+      // Transform the API response to match our component structure
+      const transformedQuiz = {
+        id: Date.now(),
+        title: `${router.query.topic || 'Mathematics'} Quiz`,
+        description: `Test your knowledge in ${router.query.topic || 'Mathematics'}`,
+        time_limit: 5, // 5 minutes
+        questions: data.questions.map((q, index) => ({
+          id: index + 1,
+          question_text: q.question,
+          question_type: 'multiple_choice',
+          options: q.options,
+          correct_answer: q.correct_answer,
+          hints: q.explanation ? [q.explanation] : []
+        }))
       }
+      
+      setQuiz(transformedQuiz)
+      setTimeRemaining(5 * 60) // 5 minutes in seconds
     } catch (error) {
       console.error('Error loading quiz:', error)
       toast.error('Failed to load quiz')
