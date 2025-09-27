@@ -212,36 +212,53 @@ def save_quiz_result(user_id, data):
 def handler(request):
     """Main handler function for Vercel"""
     try:
+        # Handle different request formats
+        method = getattr(request, 'method', 'GET')
+        headers = getattr(request, 'headers', {})
+        body = getattr(request, 'body', None)
+        
         # Handle CORS
-        if request.method == 'OPTIONS':
+        if method == 'OPTIONS':
             return {
                 'statusCode': 200,
                 'headers': {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, X-User-ID',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-ID',
                 },
                 'body': ''
             }
         
-        if request.method == 'GET':
-            # Get user ID from query parameters or headers
-            user_id = request.headers.get('X-User-ID', 'demo-user')
+        if method == 'GET':
+            # Get user ID from headers or use demo user
+            user_id = headers.get('X-User-ID', 'demo-user')
             
             # Get performance data
             performance_data = get_performance_data(user_id)
             
+            # Always return data, even if empty
             if performance_data is None:
-                return {
-                    'statusCode': 500,
-                    'headers': {
-                        'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'application/json'
-                    },
-                    'body': json.dumps({
-                        "success": False,
-                        "error": "Failed to get performance data"
-                    })
+                performance_data = {
+                    "overall_score": 0,
+                    "topics_studied": 0,
+                    "total_time": 0,
+                    "quizzes_completed": 0,
+                    "topics_mastered": 0,
+                    "active_paths": 0,
+                    "recent_activities": [],
+                    "weaknesses": [],
+                    "strengths": [],
+                    "performance_over_time": [],
+                    "subject_performance": [],
+                    "topic_mastery": [],
+                    "weekly_activity": [],
+                    "recent_topics": [],
+                    "stats": {
+                        "completed_quizzes": 0,
+                        "average_score": 0,
+                        "study_streak": 0,
+                        "total_study_time": 0
+                    }
                 }
             
             return {
@@ -253,12 +270,15 @@ def handler(request):
                 'body': json.dumps(performance_data)
             }
         
-        elif request.method == 'POST':
+        elif method == 'POST':
             # Parse request body
-            data = json.loads(request.body)
+            if isinstance(body, str):
+                data = json.loads(body)
+            else:
+                data = body or {}
             
             # Extract user ID from headers or data
-            user_id = request.headers.get('X-User-ID', data.get('user_id', 'demo-user'))
+            user_id = headers.get('X-User-ID', data.get('user_id', 'demo-user'))
             
             # Save quiz result
             result = save_quiz_result(user_id, data)
@@ -283,14 +303,34 @@ def handler(request):
             }
             
     except Exception as e:
+        print(f"Performance API Error: {e}")
         return {
-            'statusCode': 500,
+            'statusCode': 200,  # Return 200 with empty data instead of 500
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
             'body': json.dumps({
-                "success": False,
-                "error": str(e)
+                "overall_score": 0,
+                "topics_studied": 0,
+                "total_time": 0,
+                "quizzes_completed": 0,
+                "topics_mastered": 0,
+                "active_paths": 0,
+                "recent_activities": [],
+                "weaknesses": [],
+                "strengths": [],
+                "performance_over_time": [],
+                "subject_performance": [],
+                "topic_mastery": [],
+                "weekly_activity": [],
+                "recent_topics": [],
+                "stats": {
+                    "completed_quizzes": 0,
+                    "average_score": 0,
+                    "study_streak": 0,
+                    "total_study_time": 0
+                },
+                "error": f"API Error: {str(e)}"
             })
         }

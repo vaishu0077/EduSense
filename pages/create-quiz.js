@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/router'
-import { Brain, Plus, X, Save } from 'lucide-react'
+import { Brain, Plus, X, Save, Play } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function CreateQuiz() {
