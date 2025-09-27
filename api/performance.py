@@ -4,7 +4,6 @@ Vercel serverless function to handle performance tracking and analytics
 
 import os
 import json
-from http.server import BaseHTTPRequestHandler
 from supabase import create_client, Client
 
 # Initialize Supabase client
@@ -132,55 +131,53 @@ def save_quiz_result(user_id, quiz_id, responses, time_taken):
             "error": str(e)
         }
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        try:
+def handler(request):
+    """Main handler function for Vercel"""
+    try:
+        # Handle CORS
+        if request.method == 'OPTIONS':
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, X-User-ID',
+                },
+                'body': ''
+            }
+        
+        if request.method == 'GET':
             # Get user ID from query parameters or headers
-            user_id = self.headers.get('X-User-ID', 'demo-user')
+            user_id = request.headers.get('X-User-ID', 'demo-user')
             
             # Get performance data
             performance_data = get_performance_data(user_id)
             
             if performance_data is None:
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                
-                error_response = {
-                    "success": False,
-                    "error": "Failed to get performance data"
+                return {
+                    'statusCode': 500,
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json'
+                    },
+                    'body': json.dumps({
+                        "success": False,
+                        "error": "Failed to get performance data"
+                    })
                 }
-                self.wfile.write(json.dumps(error_response).encode('utf-8'))
-                return
             
-            # Send response
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            self.wfile.write(json.dumps(performance_data).encode('utf-8'))
-            
-        except Exception as e:
-            # Send error response
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            error_response = {
-                "success": False,
-                "error": str(e)
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps(performance_data)
             }
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
-    
-    def do_POST(self):
-        try:
+        
+        elif request.method == 'POST':
             # Parse request body
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
+            data = json.loads(request.body)
             
             # Extract parameters
             user_id = data.get('user_id', 'demo-user')
@@ -191,33 +188,34 @@ class handler(BaseHTTPRequestHandler):
             # Save quiz result
             result = save_quiz_result(user_id, quiz_id, responses, time_taken)
             
-            # Send response
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-User-ID')
-            self.end_headers()
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps(result)
+            }
+        
+        else:
+            return {
+                'statusCode': 405,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({'error': 'Method not allowed'})
+            }
             
-            self.wfile.write(json.dumps(result).encode('utf-8'))
-            
-        except Exception as e:
-            # Send error response
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            error_response = {
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({
                 "success": False,
                 "error": str(e)
-            }
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
-    
-    def do_OPTIONS(self):
-        # Handle CORS preflight
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-User-ID')
-        self.end_headers()
+            })
+        }
