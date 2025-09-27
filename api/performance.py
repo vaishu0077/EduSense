@@ -8,8 +8,8 @@ from http.server import BaseHTTPRequestHandler
 from supabase import create_client, Client
 
 # Initialize Supabase client
-supabase_url = os.environ.get('SUPABASE_URL')
-supabase_key = os.environ.get('SUPABASE_ANON_KEY')
+supabase_url = os.environ.get('NEXT_PUBLIC_SUPABASE_URL')
+supabase_key = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
 if supabase_url and supabase_key:
     supabase: Client = create_client(supabase_url, supabase_key)
