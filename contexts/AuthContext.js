@@ -6,11 +6,13 @@ import toast from 'react-hot-toast'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+let supabase = null
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey)
+} else {
+  console.warn('Supabase environment variables not found. Authentication will use demo mode.')
+}
 
 const AuthContext = createContext({})
 
@@ -104,6 +106,11 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true)
+      
+      if (!supabase) {
+        throw new Error('Supabase not configured. Please set up your environment variables.')
+      }
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

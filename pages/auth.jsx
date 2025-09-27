@@ -88,7 +88,12 @@ export default function Auth() {
   }
 
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle()
+    try {
+      await signInWithGoogle()
+    } catch (error) {
+      console.error('Google sign-in error:', error)
+      alert('Google sign-in is currently being configured. Please use email/password for now.')
+    }
   }
 
   const handleGitHubSignIn = async () => {
