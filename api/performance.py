@@ -33,7 +33,13 @@ def get_performance_data(user_id):
             "subject_performance": [],
             "topic_mastery": [],
             "weekly_activity": [],
-            "recent_topics": []
+            "recent_topics": [],
+            "stats": {
+                "completed_quizzes": 0,
+                "average_score": 0,
+                "study_streak": 0,
+                "total_study_time": 0
+            }
         }
     
     try:
