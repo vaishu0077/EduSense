@@ -31,9 +31,9 @@ const AIInsights = () => {
       
       // Load multiple AI insights in parallel
       const [predictions, weaknesses, recommendations] = await Promise.all([
-        fetch(`/api/performance-prediction?user_id=${user.id}&type=overall`).then(r => r.json()),
-        fetch(`/api/weakness-detection?user_id=${user.id}&type=comprehensive`).then(r => r.json()),
-        fetch(`/api/content-recommendation?user_id=${user.id}&limit=3`).then(r => r.json())
+        fetch(`/api/ai-services?service=performance-prediction&user_id=${user.id}&type=overall`).then(r => r.json()),
+        fetch(`/api/ai-services?service=weakness-detection&user_id=${user.id}&type=comprehensive`).then(r => r.json()),
+        fetch(`/api/ai-services?service=content-recommendation&user_id=${user.id}&limit=3`).then(r => r.json())
       ])
 
       setInsights({
