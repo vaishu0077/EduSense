@@ -8,8 +8,7 @@ import {
   Eye, 
   EyeOff, 
   User,
-  BookOpen,
-  Github
+  BookOpen
 } from 'lucide-react'
 
 export default function Auth() {
@@ -24,7 +23,7 @@ export default function Auth() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { signIn, signUp, signInWithGoogle, signInWithGitHub, loading } = useAuth()
+  const { signIn, signUp, signInWithGoogle, loading } = useAuth()
   const router = useRouter()
 
   const subjects = [
@@ -96,9 +95,6 @@ export default function Auth() {
     }
   }
 
-  const handleGitHubSignIn = async () => {
-    await signInWithGitHub()
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -327,15 +323,6 @@ export default function Auth() {
                   Google
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleGitHubSignIn}
-                  disabled={loading}
-                  className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <Github className="w-5 h-5 mr-2" />
-                  GitHub
-                </button>
               </div>
             </div>
           </form>

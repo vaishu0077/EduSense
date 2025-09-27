@@ -114,7 +114,9 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: typeof window !== 'undefined' 
+            ? `${window.location.origin}/`
+            : 'https://edusense-brown.vercel.app/'
         }
       })
 
@@ -129,26 +131,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signInWithGitHub = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
-      })
-
-      if (error) throw error
-
-      return { data, error: null }
-    } catch (error) {
-      toast.error(error.message)
-      return { data: null, error }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const signOut = async () => {
     try {
@@ -200,7 +182,6 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signInWithGoogle,
-    signInWithGitHub,
     signOut,
     resetPassword,
     updateProfile,
