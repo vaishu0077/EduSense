@@ -35,7 +35,7 @@ export default function Materials() {
   const loadMaterials = async () => {
     try {
       setLoadingMaterials(true)
-      const response = await fetch('/api/search-materials')
+      const response = await fetch('/api/materials-services?service=search')
       const data = await response.json()
       
       if (data.success) {
