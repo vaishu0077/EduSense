@@ -1,0 +1,36 @@
+{
+  "name": "edusense",
+  "version": "1.0.0",
+  "description": "AI-Powered Adaptive Learning Platform",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@supabase/supabase-js": "^2.38.4",
+    "recharts": "^2.8.0",
+    "lucide-react": "^0.294.0",
+    "axios": "^1.6.2",
+    "react-hot-toast": "^2.4.1",
+    "framer-motion": "^10.16.16",
+    "date-fns": "^2.30.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.6",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

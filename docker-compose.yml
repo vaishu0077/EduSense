@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: edusense
+      POSTGRES_USER: edusense_user
+      POSTGRES_PASSWORD: edusense_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edusense_user -d edusense"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Backend API
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://edusense_user:edusense_password@postgres:5432/edusense
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_SUPABASE_URL=${SUPABASE_URL}
+      - REACT_APP_SUPABASE_ANON_KEY=${SUPABASE_KEY}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm start
+
+  # Celery Worker for background tasks
+  celery:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://edusense_user:edusense_password@postgres:5432/edusense
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    command: celery -A app.core.celery worker --loglevel=info
+
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://edusense_user:edusense_password@postgres:5432/edusense
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    command: celery -A app.core.celery beat --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
