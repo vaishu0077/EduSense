@@ -31,8 +31,8 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
     handleFiles(selectedFiles)
   }
 
-  const handleFiles = (newFiles) => {
-    const maxFileSize = 4 * 1024 * 1024 // 4MB limit
+    const handleFiles = (newFiles) => {
+      const maxFileSize = 1 * 1024 * 1024 // 1MB limit for PDFs
     
     const validFiles = newFiles.filter(file => {
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
@@ -42,9 +42,9 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
       if (!isAcceptedType) {
         toast.error(`${file.name}: Unsupported file type`)
       }
-      if (!isWithinSizeLimit) {
-        toast.error(`${file.name}: File too large (max 4MB)`)
-      }
+        if (!isWithinSizeLimit) {
+          toast.error(`${file.name}: File too large (max 1MB)`)
+        }
       
       return isAcceptedType && isWithinSizeLimit
     })

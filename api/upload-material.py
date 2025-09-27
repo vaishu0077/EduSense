@@ -50,9 +50,9 @@ class handler(BaseHTTPRequestHandler):
             file_type = data.get('type', 'text')
             user_id = data.get('user_id', 'demo-user')
             
-            # Validate file size (4MB limit for Vercel)
-            if len(file_content) > 4 * 1024 * 1024:  # 4MB
-                raise ValueError('File too large. Maximum size is 4MB.')
+            # Validate file size (1MB limit for Vercel serverless)
+            if len(file_content) > 1 * 1024 * 1024:  # 1MB
+                raise ValueError('File too large. Maximum size is 1MB for PDF uploads.')
             
             # Process the file
             result = process_file_simple(filename, file_content, file_type, user_id)

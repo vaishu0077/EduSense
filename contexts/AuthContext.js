@@ -6,9 +6,17 @@ import toast from 'react-hot-toast'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+// Create a single Supabase client instance
 let supabase = null
 
-if (supabaseUrl && supabaseKey) {
+if (typeof window !== 'undefined' && supabaseUrl && supabaseKey) {
+  // Only create client on client side to avoid multiple instances
+  if (!window.__supabase_client) {
+    window.__supabase_client = createClient(supabaseUrl, supabaseKey)
+  }
+  supabase = window.__supabase_client
+} else if (supabaseUrl && supabaseKey) {
+  // Server-side fallback
   supabase = createClient(supabaseUrl, supabaseKey)
 } else {
   console.warn('Supabase environment variables not found. Authentication will use demo mode.')
