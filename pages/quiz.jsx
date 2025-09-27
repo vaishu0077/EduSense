@@ -61,7 +61,31 @@ export default function Quiz() {
         })
       })
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('API Response:', data) // Debug log
+      
+      // Check if the response has the expected structure
+      if (!data || (!data.questions && !data.quiz)) {
+        throw new Error('Invalid response format from API')
+      }
+      
+      // Handle different response formats
+      let questions = []
+      if (data.quiz && data.quiz.questions) {
+        questions = data.quiz.questions
+      } else if (data.questions) {
+        questions = data.questions
+      } else {
+        throw new Error('No questions found in API response')
+      }
+      
+      if (!questions || questions.length === 0) {
+        throw new Error('No questions generated')
+      }
       
       // Transform the API response to match our component structure
       const transformedQuiz = {
@@ -69,9 +93,9 @@ export default function Quiz() {
         title: `${router.query.topic || 'Mathematics'} Quiz`,
         description: `Test your knowledge in ${router.query.topic || 'Mathematics'}`,
         time_limit: 5, // 5 minutes
-        questions: data.questions.map((q, index) => ({
+        questions: questions.map((q, index) => ({
           id: index + 1,
-          question_text: q.question,
+          question_text: q.question || q.question_text,
           question_type: 'multiple_choice',
           options: q.options,
           correct_answer: q.correct_answer,
@@ -83,7 +107,7 @@ export default function Quiz() {
       setTimeRemaining(5 * 60) // 5 minutes in seconds
     } catch (error) {
       console.error('Error loading quiz:', error)
-      toast.error('Failed to load quiz')
+      toast.error(`Failed to load quiz: ${error.message}`)
     } finally {
       setLoading(false)
     }

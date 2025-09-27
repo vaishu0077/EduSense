@@ -68,11 +68,11 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      title: 'Take a Quiz',
-      description: 'Test your knowledge with AI-generated quizzes',
+      title: 'Create a Quiz',
+      description: 'Generate quizzes with AI or create manually',
       icon: Brain,
       color: 'bg-blue-500',
-      href: '/quiz'
+      href: '/create-quiz'
     },
     {
       title: 'View Progress',
