@@ -81,13 +81,16 @@ export default function Quiz() {
       }
 
       const data = await response.json()
+      console.log('Quiz generation response:', data)
       
       if (data.success && data.questions) {
+        console.log('Questions received:', data.questions)
         setQuiz({
           ...quizData,
           questions: data.questions
         })
       } else {
+        console.error('Quiz generation failed:', data)
         throw new Error('Failed to generate quiz from material')
       }
     } catch (error) {
