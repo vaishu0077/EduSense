@@ -126,8 +126,8 @@ export default function Dashboard() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <div className="flex items-center">
-                <Brain className="h-8 w-8 text-indigo-600" />
-                <span className="ml-2 text-2xl font-bold text-gray-900">EduSense</span>
+                <Brain className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                <span className="ml-2 text-2xl font-bold text-gray-900 dark:text-gray-100">EduSense</span>
               </div>
             </div>
                 <div className="flex items-center space-x-4">
@@ -151,51 +151,51 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}!
           </h1>
-          <p className="text-gray-600">Ready to continue your learning journey?</p>
+          <p className="text-gray-600 dark:text-gray-400">Ready to continue your learning journey?</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Completed Quizzes</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.completedQuizzes}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Quizzes</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.completedQuizzes}</p>
               </div>
-              <Award className="h-12 w-12 text-yellow-500" />
+              <Award className="h-12 w-12 text-yellow-500 dark:text-yellow-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Average Score</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.averageScore}%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Average Score</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.averageScore}%</p>
               </div>
-              <Target className="h-12 w-12 text-green-500" />
+              <Target className="h-12 w-12 text-green-500 dark:text-green-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Study Streak</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.studyStreak} days</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Study Streak</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.studyStreak} days</p>
               </div>
-              <Zap className="h-12 w-12 text-orange-500" />
+              <Zap className="h-12 w-12 text-orange-500 dark:text-orange-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Study Time</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalStudyTime}h</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Study Time</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.totalStudyTime}h</p>
               </div>
-              <Clock className="h-12 w-12 text-blue-500" />
+              <Clock className="h-12 w-12 text-blue-500 dark:text-blue-400" />
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions */}
           <div className="lg:col-span-2">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {quickActions.map((action, index) => {
                 const IconComponent = action.icon
@@ -211,14 +211,14 @@ export default function Dashboard() {
                   <button
                     key={index}
                     onClick={() => router.push(action.href)}
-                    className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow group"
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 group"
                   >
                     <div className={`${action.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                       <IconComponent className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{action.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{action.description}</p>
-                    <div className="flex items-center text-indigo-600 text-sm font-medium">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{action.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{action.description}</p>
+                    <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-medium">
                       Get started
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </div>
@@ -230,24 +230,24 @@ export default function Dashboard() {
 
           {/* Recent Topics */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Topics</h2>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Topics</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
               <div className="p-6">
                 <div className="space-y-4">
                   {recentTopics.map((topic, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-medium text-gray-900">{topic.name}</h4>
-                          <span className="text-sm text-gray-500">{topic.progress}%</span>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">{topic.name}</h4>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">{topic.progress}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-1">
                           <div 
-                            className="bg-indigo-600 h-2 rounded-full" 
+                            className="bg-indigo-600 dark:bg-indigo-500 h-2 rounded-full" 
                             style={{ width: `${topic.progress}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-gray-500">{topic.lastStudied}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{topic.lastStudied}</p>
                       </div>
                     </div>
                   ))}

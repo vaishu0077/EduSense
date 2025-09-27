@@ -251,10 +251,10 @@ export default function Quiz() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="text-center">
           <div className="spinner w-8 h-8 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading AI-generated quiz...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading AI-generated quiz...</p>
         </div>
       </div>
     )
@@ -262,37 +262,37 @@ export default function Quiz() {
 
   if (!quiz) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Quiz not found</h3>
-          <p className="text-gray-500">The quiz you're looking for doesn't exist.</p>
+          <XCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Quiz not found</h3>
+          <p className="text-gray-500 dark:text-gray-400">The quiz you're looking for doesn't exist.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <GraduationCap className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">EduSense</span>
+              <GraduationCap className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-gray-100">EduSense</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/profile')}
-                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700"
+                className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span>Profile</span>
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 Dashboard
               </button>
