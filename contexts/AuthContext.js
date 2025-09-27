@@ -9,15 +9,18 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 // Create a single Supabase client instance
 let supabase = null
 
-if (typeof window !== 'undefined' && supabaseUrl && supabaseKey) {
-  // Only create client on client side to avoid multiple instances
-  if (!window.__supabase_client) {
-    window.__supabase_client = createClient(supabaseUrl, supabaseKey)
+if (supabaseUrl && supabaseKey) {
+  // Create client only once
+  if (typeof window !== 'undefined') {
+    // Client-side: use global variable to prevent multiple instances
+    if (!window.__supabase_client) {
+      window.__supabase_client = createClient(supabaseUrl, supabaseKey)
+    }
+    supabase = window.__supabase_client
+  } else {
+    // Server-side: create new instance
+    supabase = createClient(supabaseUrl, supabaseKey)
   }
-  supabase = window.__supabase_client
-} else if (supabaseUrl && supabaseKey) {
-  // Server-side fallback
-  supabase = createClient(supabaseUrl, supabaseKey)
 } else {
   console.warn('Supabase environment variables not found. Authentication will use demo mode.')
 }
@@ -110,10 +113,14 @@ export const AuthProvider = ({ children }) => {
 
         // Only show messages and redirects for actual auth events, not session refreshes
         if (event === 'SIGNED_IN' && !isInitialLoad) {
-          toast.success('Welcome to EduSense!')
-          // Only redirect if not already on dashboard
-          if (router.pathname !== '/') {
-            router.push('/')
+          // Only show welcome message if this is a genuine sign-in, not a session refresh
+          const wasSignedOut = !localStorage.getItem('edusense_user')
+          if (wasSignedOut) {
+            toast.success('Welcome to EduSense!')
+            // Only redirect if not already on dashboard
+            if (router.pathname !== '/') {
+              router.push('/')
+            }
           }
         } else if (event === 'SIGNED_OUT') {
           toast.success('Logged out successfully')

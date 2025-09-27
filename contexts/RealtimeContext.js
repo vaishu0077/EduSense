@@ -35,10 +35,11 @@ export const RealtimeProvider = ({ children }) => {
     if (!user || !supabase) return
 
     let subscription = null
+    let sessionInterval = null
 
     const initializeRealtime = async () => {
       try {
-        // Subscribe to notifications
+        // Subscribe to notifications only
         subscription = supabase
           .channel('notifications')
           .on('postgres_changes', 
@@ -60,118 +61,135 @@ export const RealtimeProvider = ({ children }) => {
               })
             }
           )
-          .on('postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'performance',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              // Real-time progress update
-              const newPerformance = payload.new
-              setLiveAnalytics(prev => ({
-                ...prev,
-                latestScore: newPerformance.score,
-                latestTopic: newPerformance.topic,
-                lastUpdated: new Date().toISOString()
-              }))
-              
-              toast.success(`Great job! Scored ${newPerformance.score}% on ${newPerformance.topic}`, {
-                duration: 3000,
-                icon: '📈'
-              })
-            }
-          )
-          .on('postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'chat_messages'
-            },
-            (payload) => {
-              const newMessage = payload.new
-              setChatMessages(prev => [...prev, newMessage])
-              
-              // Only show toast if message is not from current user
-              if (newMessage.user_id !== user.id) {
-                toast.success(`New message from ${newMessage.sender_name}`, {
-                  duration: 3000,
-                  icon: '💬'
-                })
-              }
-            }
-          )
-          .subscribe((status) => {
-            setIsConnected(status === 'SUBSCRIBED')
-          })
+          .subscribe()
 
-        // Load initial data
-        await loadInitialData()
+        // Track user session (simplified - no frequent updates)
+        const trackSession = async () => {
+          try {
+            await supabase
+              .from('user_sessions')
+              .upsert({
+                user_id: user.id,
+                is_online: true,
+                last_seen: new Date().toISOString(),
+                user_agent: navigator.userAgent
+              }, {
+                onConflict: 'user_id'
+              })
+          } catch (error) {
+            console.error('Error tracking session:', error)
+          }
+        }
+
+        // Track session only once on connection
+        await trackSession()
         
+        // Update session every 5 minutes (much less frequent)
+        sessionInterval = setInterval(trackSession, 300000)
+
+        setIsConnected(true)
       } catch (error) {
-        console.error('Realtime initialization error:', error)
+        console.error('Realtime connection error:', error)
+        setIsConnected(false)
       }
     }
 
     initializeRealtime()
 
+    // Cleanup on unmount
     return () => {
       if (subscription) {
-        subscription.unsubscribe()
+        supabase.removeChannel(subscription)
       }
+      if (sessionInterval) {
+        clearInterval(sessionInterval)
+      }
+      setIsConnected(false)
     }
   }, [user])
 
-  const loadInitialData = async () => {
-    if (!user) return
+  // Load initial data
+  useEffect(() => {
+    if (!user || !supabase) return
 
-    try {
-      // Load notifications
-      const { data: notificationsData } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20)
+    const loadInitialData = async () => {
+      try {
+        // Load notifications
+        const { data: notificationsData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(20)
 
-      if (notificationsData) {
-        setNotifications(notificationsData)
-        setUnreadCount(notificationsData.filter(n => !n.read).length)
+        if (notificationsData) {
+          setNotifications(notificationsData)
+          setUnreadCount(notificationsData.filter(n => !n.read).length)
+        }
+
+        // Load chat messages
+        const { data: chatData } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50)
+
+        if (chatData) {
+          setChatMessages(chatData.reverse())
+        }
+
+        // Load analytics
+        const { data: analyticsData } = await supabase
+          .from('realtime_analytics')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('timestamp', { ascending: false })
+          .limit(1)
+
+        if (analyticsData && analyticsData.length > 0) {
+          setLiveAnalytics(analyticsData[0])
+        }
+
+      } catch (error) {
+        console.error('Error loading initial data:', error)
       }
-
-      // Load recent chat messages
-      const { data: chatData } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (chatData) {
-        setChatMessages(chatData.reverse())
-      }
-
-      // Load online users
-      const { data: onlineUsersData } = await supabase
-        .from('user_sessions')
-        .select('user_id, last_seen')
-        .gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Last 5 minutes
-
-      if (onlineUsersData) {
-        setOnlineUsers(onlineUsersData)
-      }
-
-    } catch (error) {
-      console.error('Error loading initial data:', error)
     }
-  }
 
-  const markNotificationAsRead = useCallback(async (notificationId) => {
+    loadInitialData()
+  }, [user])
+
+  // Send chat message
+  const sendChatMessage = useCallback(async (message) => {
+    if (!user || !supabase) return
+
     try {
-      await supabase
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          user_id: user.id,
+          sender_name: user.user_metadata?.full_name || user.email,
+          message: message,
+          message_type: 'text'
+        })
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error sending chat message:', error)
+      toast.error('Failed to send message')
+    }
+  }, [user])
+
+  // Mark notification as read
+  const markNotificationAsRead = useCallback(async (notificationId) => {
+    if (!supabase) return
+
+    try {
+      const { error } = await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId)
+
+      if (error) throw error
 
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
@@ -182,89 +200,6 @@ export const RealtimeProvider = ({ children }) => {
     }
   }, [])
 
-  const markAllNotificationsAsRead = useCallback(async () => {
-    try {
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', user.id)
-        .eq('read', false)
-
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      setUnreadCount(0)
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error)
-    }
-  }, [user])
-
-  const sendChatMessage = useCallback(async (message, recipientId = null) => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .insert({
-          user_id: user.id,
-          sender_name: user.user_metadata?.full_name || user.email,
-          message: message,
-          recipient_id: recipientId,
-          created_at: new Date().toISOString()
-        })
-
-      if (error) throw error
-      return { success: true, data }
-    } catch (error) {
-      console.error('Error sending chat message:', error)
-      toast.error('Failed to send message')
-      return { success: false, error }
-    }
-  }, [user])
-
-  const sendNotification = useCallback(async (title, message, type = 'info', targetUserId = null) => {
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: targetUserId || user.id,
-          title: title,
-          message: message,
-          type: type,
-          read: false,
-          created_at: new Date().toISOString()
-        })
-
-      if (error) throw error
-      return { success: true, data }
-    } catch (error) {
-      console.error('Error sending notification:', error)
-      return { success: false, error }
-    }
-  }, [user])
-
-  const updateUserPresence = useCallback(async () => {
-    if (!user) return
-
-    try {
-      await supabase
-        .from('user_sessions')
-        .upsert({
-          user_id: user.id,
-          last_seen: new Date().toISOString(),
-          is_online: true
-        })
-    } catch (error) {
-      console.error('Error updating user presence:', error)
-    }
-  }, [user])
-
-  // Update user presence every 30 seconds
-  useEffect(() => {
-    if (!user) return
-
-    updateUserPresence()
-    const interval = setInterval(updateUserPresence, 30000)
-
-    return () => clearInterval(interval)
-  }, [user, updateUserPresence])
-
   const value = {
     notifications,
     unreadCount,
@@ -272,11 +207,8 @@ export const RealtimeProvider = ({ children }) => {
     liveAnalytics,
     chatMessages,
     onlineUsers,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
     sendChatMessage,
-    sendNotification,
-    updateUserPresence
+    markNotificationAsRead
   }
 
   return (

@@ -36,15 +36,14 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 CREATE TABLE IF NOT EXISTS public.user_sessions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    session_id VARCHAR(255) NOT NULL,
+    session_id VARCHAR(255),
     is_online BOOLEAN DEFAULT true,
     last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     user_agent TEXT,
-    ip_address INET,
+    ip_address TEXT,
     location JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id, session_id)
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create realtime_analytics table
@@ -102,6 +101,9 @@ CREATE POLICY "Users can insert their own messages" ON public.chat_messages FOR 
 
 CREATE POLICY "Users can view their own sessions" ON public.user_sessions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage their own sessions" ON public.user_sessions FOR ALL USING (auth.uid() = user_id);
+
+-- Add unique constraint on user_id for user_sessions
+ALTER TABLE public.user_sessions ADD CONSTRAINT unique_user_session UNIQUE (user_id);
 
 CREATE POLICY "Users can view their own analytics" ON public.realtime_analytics FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "System can insert analytics" ON public.realtime_analytics FOR INSERT WITH CHECK (true);
