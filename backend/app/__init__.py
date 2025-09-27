@@ -1,1 +1,0 @@
-# EduSense Backend Application

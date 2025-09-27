@@ -5,7 +5,6 @@ Vercel serverless function to generate personalized learning paths using Gemini 
 import os
 import json
 import google.generativeai as genai
-from http.server import BaseHTTPRequestHandler
 
 # Configure Gemini
 genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
@@ -82,49 +81,60 @@ def generate_learning_path(user_profile, weaknesses, available_topics):
             "learning_path": None
         }
 
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        try:
-            # Parse request body
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
-            
-            # Extract parameters
-            user_profile = data.get('user_profile', {})
-            weaknesses = data.get('weaknesses', [])
-            available_topics = data.get('available_topics', [])
-            
-            # Generate learning path
-            result = generate_learning_path(user_profile, weaknesses, available_topics)
-            
-            # Send response
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-            self.end_headers()
-            
-            self.wfile.write(json.dumps(result).encode('utf-8'))
-            
-        except Exception as e:
-            # Send error response
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            error_response = {
-                "success": False,
-                "error": str(e)
+def handler(request):
+    """Main handler function for Vercel"""
+    try:
+        # Handle CORS
+        if request.method == 'OPTIONS':
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                },
+                'body': ''
             }
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
-    
-    def do_OPTIONS(self):
-        # Handle CORS preflight
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+        
+        if request.method != 'POST':
+            return {
+                'statusCode': 405,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({'error': 'Method not allowed'})
+            }
+        
+        # Parse request body
+        data = json.loads(request.body)
+        
+        # Extract parameters
+        user_profile = data.get('user_profile', {})
+        weaknesses = data.get('weaknesses', [])
+        available_topics = data.get('available_topics', [])
+        
+        # Generate learning path
+        result = generate_learning_path(user_profile, weaknesses, available_topics)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps(result)
+        }
+        
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({
+                'success': False,
+                'error': str(e)
+            })
+        }
