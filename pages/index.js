@@ -19,7 +19,7 @@ import AIInsights from '../components/AIInsights'
 import RealtimeNotifications from '../components/RealtimeNotifications'
 import RealtimeAnalytics from '../components/RealtimeAnalytics'
 import RealtimeProgress from '../components/RealtimeProgress'
-import LiveChat from '../components/LiveChat'
+import ChatBot from '../components/ChatBot'
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
@@ -302,8 +302,8 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Live Chat */}
-      <LiveChat />
+      {/* AI Chat Bot */}
+      <ChatBot />
     </div>
   )
 }
