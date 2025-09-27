@@ -20,6 +20,7 @@ import RealtimeNotifications from '../components/RealtimeNotifications'
 import RealtimeAnalytics from '../components/RealtimeAnalytics'
 import RealtimeProgress from '../components/RealtimeProgress'
 import ChatBot from '../components/ChatBot'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
@@ -118,9 +119,9 @@ export default function Dashboard() {
   const recentTopics = analytics?.recent_topics || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
@@ -129,19 +130,20 @@ export default function Dashboard() {
                 <span className="ml-2 text-2xl font-bold text-gray-900">EduSense</span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                Welcome back, {user.user_metadata?.full_name || user.email}
-              </div>
-              <RealtimeNotifications />
-              <button
-                onClick={() => router.push('/profile')}
-                className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
-              >
-                <User className="w-4 h-4" />
-                <span>Profile</span>
-              </button>
-            </div>
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Welcome back, {user.user_metadata?.full_name || user.email}
+                  </div>
+                  <RealtimeNotifications />
+                  <ThemeToggle />
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </button>
+                </div>
           </div>
         </div>
       </header>
