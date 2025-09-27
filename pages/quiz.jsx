@@ -31,6 +31,9 @@ export default function Quiz() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [quizStarted, setQuizStarted] = useState(false)
+  const [quizCompleted, setQuizCompleted] = useState(false)
+  const [quizResults, setQuizResults] = useState(null)
+  const [reviewMode, setReviewMode] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -150,6 +153,17 @@ export default function Quiz() {
     }
   }
 
+  const goToDashboard = () => {
+    router.push('/')
+  }
+
+  const reviewAnswers = () => {
+    setCurrentQuestionIndex(0)
+    setQuizStarted(true)
+    setQuizCompleted(false)
+    setReviewMode(true)
+  }
+
   const handleSubmitQuiz = async () => {
     setSubmitting(true)
     try {
@@ -171,8 +185,30 @@ export default function Quiz() {
       })
       
       const result = await response.json()
+      
+      // Calculate detailed results
+      const detailedResults = quiz.questions.map((question, index) => {
+        const userAnswer = responses[question.id]
+        const isCorrect = userAnswer === question.correct_answer
+        return {
+          question: question,
+          userAnswer: userAnswer,
+          correctAnswer: question.correct_answer,
+          isCorrect: isCorrect,
+          explanation: question.explanation
+        }
+      })
+      
+      setQuizResults({
+        score: result.score,
+        totalQuestions: quiz.questions.length,
+        correctAnswers: detailedResults.filter(r => r.isCorrect).length,
+        detailedResults: detailedResults,
+        timeTaken: quiz.time_limit ? (quiz.time_limit * 60 - timeRemaining) : null
+      })
+      
+      setQuizCompleted(true)
       toast.success(`Quiz completed! Score: ${result.score}%`)
-      router.push('/progress')
     } catch (error) {
       console.error('Error submitting quiz:', error)
       toast.error('Failed to submit quiz')
@@ -288,8 +324,40 @@ export default function Quiz() {
             </div>
           </div>
 
-          {/* Quiz Start Screen */}
-          {!quizStarted ? (
+          {/* Quiz Completion Screen */}
+          {quizCompleted && quizResults ? (
+            <div className="card mb-6 text-center">
+              <div className="mb-6">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
+                <div className="text-4xl font-bold text-indigo-600 mb-2">{quizResults.score}%</div>
+                <p className="text-gray-600 mb-4">
+                  You got {quizResults.correctAnswers} out of {quizResults.totalQuestions} questions correct
+                  {quizResults.timeTaken && ` in ${Math.floor(quizResults.timeTaken / 60)}:${(quizResults.timeTaken % 60).toString().padStart(2, '0')}`}
+                </p>
+                
+                <div className="flex justify-center space-x-4 mb-6">
+                  <button
+                    onClick={reviewAnswers}
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center"
+                  >
+                    <Brain className="h-5 w-5 mr-2" />
+                    Review Answers
+                  </button>
+                  <button
+                    onClick={goToDashboard}
+                    className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center"
+                  >
+                    <GraduationCap className="h-5 w-5 mr-2" />
+                    Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : !quizStarted ? (
+            /* Quiz Start Screen */
             <div className="card mb-6 text-center">
               <div className="mb-6">
                 <Brain className="h-16 w-16 text-indigo-600 mx-auto mb-4" />
@@ -345,6 +413,35 @@ export default function Quiz() {
                       <Volume2 className="h-5 w-5" />
                     </button>
                   </div>
+                  
+                  {/* Review Mode Information */}
+                  {reviewMode && quizResults && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        {quizResults.detailedResults[currentQuestionIndex]?.isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                        )}
+                        <span className={`font-medium ${
+                          quizResults.detailedResults[currentQuestionIndex]?.isCorrect 
+                            ? 'text-green-800' 
+                            : 'text-red-800'
+                        }`}>
+                          {quizResults.detailedResults[currentQuestionIndex]?.isCorrect 
+                            ? 'Correct!' 
+                            : 'Incorrect'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <p><strong>Your answer:</strong> {quizResults.detailedResults[currentQuestionIndex]?.userAnswer || 'No answer'}</p>
+                        <p><strong>Correct answer:</strong> {quizResults.detailedResults[currentQuestionIndex]?.correctAnswer}</p>
+                        {quizResults.detailedResults[currentQuestionIndex]?.explanation && (
+                          <p className="mt-2"><strong>Explanation:</strong> {quizResults.detailedResults[currentQuestionIndex].explanation}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   {currentQuestion.hints && currentQuestion.hints.length > 0 && (
                     <div className="mb-4">
@@ -468,7 +565,26 @@ export default function Quiz() {
                 ))}
               </div>
 
-              {isLastQuestion ? (
+              {reviewMode ? (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={goToDashboard}
+                    className="btn-secondary flex items-center"
+                  >
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </button>
+                  {!isLastQuestion && (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="btn-primary flex items-center"
+                    >
+                      Next
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </button>
+                  )}
+                </div>
+              ) : isLastQuestion ? (
                 <button
                   onClick={handleSubmitQuiz}
                   disabled={!selectedAnswer || submitting}
