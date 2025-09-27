@@ -54,6 +54,15 @@ export default function Quiz() {
 
   const loadQuiz = async () => {
     try {
+      // Check if there's a stored quiz from localStorage first
+      const storedQuiz = localStorage.getItem('materialQuiz')
+      if (storedQuiz) {
+        const quizData = JSON.parse(storedQuiz)
+        setQuiz(quizData)
+        setLoading(false)
+        return
+      }
+
       const response = await fetch('/api/generate_quiz', {
         method: 'POST',
         headers: {
@@ -62,7 +71,8 @@ export default function Quiz() {
         body: JSON.stringify({
           topic: router.query.topic || 'Mathematics',
           difficulty: router.query.difficulty || 'medium',
-          num_questions: 5
+          num_questions: parseInt(router.query.num_questions) || 5,
+          time_limit: parseInt(router.query.time_limit) || 30
         })
       })
       
@@ -199,12 +209,16 @@ export default function Quiz() {
         }
       })
       
+      // Calculate score manually if API doesn't provide it
+      const correctCount = detailedResults.filter(r => r.isCorrect).length
+      const calculatedScore = Math.round((correctCount / quiz.questions.length) * 100)
+      
       setQuizResults({
-        score: result.score,
+        score: result.score || calculatedScore,
         totalQuestions: quiz.questions.length,
-        correctAnswers: detailedResults.filter(r => r.isCorrect).length,
+        correctAnswers: correctCount,
         detailedResults: detailedResults,
-        timeTaken: quiz.time_limit ? (quiz.time_limit * 60 - timeRemaining) : null
+        timeTaken: quiz.timeLimit ? (quiz.timeLimit * 60 - timeRemaining) : null
       })
       
       setQuizCompleted(true)
