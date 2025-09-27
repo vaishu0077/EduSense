@@ -61,6 +61,15 @@ export default function Quiz() {
       }
 
       // If no suggested questions, generate from content using AI
+      console.log('Sending quiz generation request:', {
+        topic: quizData.topic,
+        difficulty: quizData.difficulty,
+        num_questions: quizData.numQuestions || 5,
+        time_limit: quizData.timeLimit,
+        material_content_length: quizData.materialContent?.length || 0,
+        has_ai_analysis: !!quizData.aiAnalysis
+      })
+      
       const response = await fetch('/api/generate_quiz', {
         method: 'POST',
         headers: {
@@ -96,7 +105,43 @@ export default function Quiz() {
     } catch (error) {
       console.error('Error generating quiz from material:', error)
       toast.error('Failed to generate quiz from material content')
+      
+      // Create a fallback quiz with basic questions
+      const fallbackQuiz = {
+        ...quizData,
+        questions: [
+          {
+            id: 1,
+            question_text: `What is the main topic of this ${quizData.topic} material?`,
+            question_type: 'multiple_choice',
+            options: [
+              'General concepts',
+              'Advanced topics', 
+              'Basic principles',
+              'Complex theories'
+            ],
+            correct_answer: 0,
+            explanation: 'This question tests your understanding of the main topic'
+          },
+          {
+            id: 2,
+            question_text: `Which of the following best describes the content of this material?`,
+            question_type: 'multiple_choice',
+            options: [
+              'Educational content',
+              'Technical documentation',
+              'Research findings',
+              'Practical guidelines'
+            ],
+            correct_answer: 0,
+            explanation: 'This question evaluates your comprehension of the material type'
+          }
+        ]
+      }
+      
+      setQuiz(fallbackQuiz)
       setLoading(false)
+      toast.success('Quiz generated with fallback questions')
     }
   }
 

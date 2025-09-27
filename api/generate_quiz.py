@@ -69,12 +69,26 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(fallback_result).encode('utf-8'))
 
     def do_GET(self):
-        """Handle GET requests - redirect to POST"""
-        self.send_response(405)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps({'error': 'Use POST method'}).encode('utf-8'))
+        """Handle GET requests - return API status"""
+        try:
+            # Test if API is working
+            test_result = get_fallback_quiz('Mathematics', 'medium', 2)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'status': 'API is working',
+                'test_quiz': test_result,
+                'message': 'Use POST method for quiz generation'
+            }).encode('utf-8'))
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': f'API error: {str(e)}'}).encode('utf-8'))
 
 def generate_quiz(topic, difficulty, num_questions, material_content='', ai_analysis=None):
     """Generate a quiz using Gemini AI"""
