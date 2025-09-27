@@ -161,47 +161,6 @@ export default function Materials() {
     toast.info('Material editing feature coming soon!')
   }
 
-  const handleGenerateQuiz = async (material) => {
-    try {
-      const response = await fetch('/api/generate-quiz-from-material', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: material.content,
-          ai_analysis: material.ai_analysis,
-          num_questions: 5,
-          difficulty: 'medium'
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate quiz')
-      }
-
-      const data = await response.json()
-      
-      if (data.success) {
-        // Store quiz data and redirect to quiz page
-        localStorage.setItem('materialQuiz', JSON.stringify({
-          title: data.quiz_title,
-          description: data.quiz_description,
-          questions: data.questions,
-          material_based: true,
-          source_material: data.source_material
-        }))
-        
-        router.push('/quiz')
-        toast.success('Quiz generated from material!')
-      } else {
-        throw new Error(data.error || 'Failed to generate quiz')
-      }
-    } catch (error) {
-      console.error('Error generating quiz:', error)
-      toast.error('Failed to generate quiz from material')
-    }
-  }
 
   if (loading) {
     return (
