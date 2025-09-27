@@ -152,7 +152,11 @@ export default function CreateQuiz() {
     }
 
     // Store quiz in localStorage for the quiz page
-    localStorage.setItem('customQuiz', JSON.stringify(quizData))
+    const quizWithTimeLimit = {
+      ...quizData,
+      timeLimit: quizData.timeLimit
+    }
+    localStorage.setItem('customQuiz', JSON.stringify(quizWithTimeLimit))
     router.push('/take-quiz')
   }
 

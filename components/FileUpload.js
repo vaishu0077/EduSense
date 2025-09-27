@@ -113,6 +113,34 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
           : f
       ))
 
+      // Store uploaded material in localStorage
+      const uploadedMaterial = {
+        id: result.material_id || `material-${Date.now()}`,
+        filename: fileItem.name,
+        file_type: fileItem.type,
+        file_size: fileItem.size,
+        content: result.content_preview || content.substring(0, 500) + '...',
+        ai_analysis: result.ai_analysis || {
+          summary: "AI analysis in progress...",
+          key_topics: [],
+          subject_category: "general",
+          difficulty_level: "intermediate",
+          learning_objectives: [],
+          study_recommendations: []
+        },
+        word_count: result.word_count || Math.floor(content.split(' ').length),
+        char_count: result.char_count || content.length,
+        starred: false,
+        tags: result.tags || [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Store in localStorage
+      const existingMaterials = JSON.parse(localStorage.getItem('uploadedMaterials') || '[]')
+      existingMaterials.unshift(uploadedMaterial) // Add to beginning
+      localStorage.setItem('uploadedMaterials', JSON.stringify(existingMaterials))
+
       toast.success(`${fileItem.name} uploaded successfully`)
       
       if (onFileUpload) {

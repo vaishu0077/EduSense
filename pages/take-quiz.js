@@ -12,7 +12,7 @@ export default function TakeQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [answers, setAnswers] = useState([])
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(0)
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
 
@@ -25,8 +25,15 @@ export default function TakeQuiz() {
     // Load quiz from localStorage
     const storedQuiz = localStorage.getItem('customQuiz')
     if (storedQuiz) {
-      setQuiz(JSON.parse(storedQuiz))
-      setAnswers(new Array(JSON.parse(storedQuiz).questions.length).fill(null))
+      const quizData = JSON.parse(storedQuiz)
+      setQuiz(quizData)
+      setAnswers(new Array(quizData.questions.length).fill(null))
+      // Set time limit from quiz data (convert minutes to seconds)
+      if (quizData.timeLimit) {
+        setTimeLeft(quizData.timeLimit * 60)
+      } else {
+        setTimeLeft(300) // Default 5 minutes
+      }
     } else {
       toast.error('No quiz found')
       router.push('/create-quiz')
