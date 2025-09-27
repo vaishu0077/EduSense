@@ -23,6 +23,12 @@ export default function MaterialAnalysis({ material, onGenerateQuiz }) {
     questions: false,
     recommendations: false
   })
+  
+  const [quizSettings, setQuizSettings] = useState({
+    numQuestions: 5,
+    timeLimit: 30,
+    difficulty: 'intermediate'
+  })
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -96,13 +102,60 @@ export default function MaterialAnalysis({ material, onGenerateQuiz }) {
             </div>
           </div>
           
-          <button
-            onClick={() => onGenerateQuiz(material)}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Generate Quiz
-          </button>
+          {/* Quiz Settings Form */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={quizSettings.numQuestions}
+                  onChange={(e) => setQuizSettings(prev => ({ ...prev, numQuestions: parseInt(e.target.value) || 5 }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Time Limit (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={quizSettings.timeLimit}
+                  onChange={(e) => setQuizSettings(prev => ({ ...prev, timeLimit: parseInt(e.target.value) || 30 }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Difficulty Level
+              </label>
+              <select
+                value={quizSettings.difficulty}
+                onChange={(e) => setQuizSettings(prev => ({ ...prev, difficulty: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            
+            <button
+              onClick={() => onGenerateQuiz(material, quizSettings)}
+              className="w-full flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Generate Quiz ({quizSettings.numQuestions} questions, {quizSettings.timeLimit} min)
+            </button>
+          </div>
         </div>
       </div>
 
