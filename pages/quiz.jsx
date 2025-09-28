@@ -60,7 +60,7 @@ export default function Quiz() {
         console.log('Using AI generation instead of suggested questions for better options')
       }
 
-      // If no suggested questions, generate from content using AI
+      // Use dedicated quiz generation API
       console.log('Sending quiz generation request:', {
         topic: quizData.topic,
         difficulty: quizData.difficulty,
@@ -70,18 +70,17 @@ export default function Quiz() {
         has_ai_analysis: !!quizData.aiAnalysis
       })
       
-      const response = await fetch('/api/generate_quiz', {
+      const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: quizData.topic,
-          difficulty: quizData.difficulty,
+          content: quizData.materialContent,
+          filename: quizData.title || 'Material',
           num_questions: quizData.numQuestions || 5,
-          time_limit: quizData.timeLimit,
-          material_content: quizData.materialContent, // Pass the actual content
-          ai_analysis: quizData.aiAnalysis // Pass the AI analysis
+          difficulty: quizData.difficulty,
+          topic: quizData.topic
         })
       })
 
@@ -199,16 +198,17 @@ export default function Quiz() {
         return
       }
 
-      const response = await fetch('/api/generate_quiz', {
+      const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: router.query.topic || 'Mathematics',
-          difficulty: router.query.difficulty || 'medium',
+          content: 'General knowledge quiz content',
+          filename: `${router.query.topic || 'Mathematics'} Quiz`,
           num_questions: parseInt(router.query.num_questions) || 5,
-          time_limit: parseInt(router.query.time_limit) || 30
+          difficulty: router.query.difficulty || 'medium',
+          topic: router.query.topic || 'Mathematics'
         })
       })
       
