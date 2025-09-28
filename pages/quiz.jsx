@@ -375,7 +375,7 @@ export default function Quiz() {
   const handleNextQuestion = () => {
     if (selectedAnswer) {
       setCurrentQuestionIndex(prev => prev + 1)
-      setSelectedAnswer(responses[quiz.questions[currentQuestionIndex + 1]?.id] || '')
+      setSelectedAnswer(responses[quiz?.questions?.[currentQuestionIndex + 1]?.id] || '')
       setShowHint(false)
     } else {
       toast.error('Please select an answer before continuing')
@@ -384,7 +384,7 @@ export default function Quiz() {
 
   const handlePreviousQuestion = () => {
     setCurrentQuestionIndex(prev => prev - 1)
-    setSelectedAnswer(responses[quiz.questions[currentQuestionIndex - 1]?.id] || '')
+    setSelectedAnswer(responses[quiz?.questions?.[currentQuestionIndex - 1]?.id] || '')
     setShowHint(false)
   }
 
@@ -429,7 +429,7 @@ export default function Quiz() {
       const result = await response.json()
       
       // Calculate detailed results
-      const detailedResults = quiz.questions.map((question, index) => {
+      const detailedResults = quiz?.questions?.map((question, index) => {
         const userAnswer = responses[question.id]
         const isCorrect = userAnswer === question.correct_answer
         return {
@@ -443,11 +443,11 @@ export default function Quiz() {
       
       // Calculate score manually if API doesn't provide it
       const correctCount = detailedResults.filter(r => r.isCorrect).length
-      const calculatedScore = Math.round((correctCount / quiz.questions.length) * 100)
+      const calculatedScore = Math.round((correctCount / (quiz?.questions?.length || 1)) * 100)
       
       setQuizResults({
         score: result.score || calculatedScore,
-        totalQuestions: quiz.questions.length,
+        totalQuestions: quiz?.questions?.length || 0,
         correctAnswers: correctCount,
         detailedResults: detailedResults,
         timeTaken: quiz.timeLimit ? (quiz.timeLimit * 60 - timeRemaining) : null
@@ -564,7 +564,7 @@ export default function Quiz() {
                   </div>
                 )}
                 <div className="text-sm text-gray-500">
-                  Question {currentQuestionIndex + 1} of {quiz.questions.length}
+                  Question {currentQuestionIndex + 1} of {quiz?.questions?.length || 0}
                 </div>
               </div>
             </div>
@@ -609,8 +609,8 @@ export default function Quiz() {
                 <Brain className="h-16 w-16 text-indigo-600 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to Start?</h2>
                 <p className="text-gray-600 mb-4">
-                  This quiz has {quiz.questions.length} questions
-                  {quiz.timeLimit && ` with a ${quiz.timeLimit} minute time limit`}.
+                  This quiz has {quiz?.questions?.length || 0} questions
+                  {quiz?.timeLimit && ` with a ${quiz.timeLimit} minute time limit`}.
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold text-gray-900 mb-2">Quiz Instructions:</h3>
@@ -637,7 +637,7 @@ export default function Quiz() {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
+                    style={{ width: `${((currentQuestionIndex + 1) / (quiz?.questions?.length || 1)) * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -800,18 +800,18 @@ export default function Quiz() {
               </button>
 
               <div className="flex items-center space-x-2">
-                {quiz.questions.map((_, index) => (
+                {quiz?.questions?.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => {
                       setCurrentQuestionIndex(index)
-                      setSelectedAnswer(responses[quiz.questions[index].id] || '')
+                      setSelectedAnswer(responses[quiz?.questions?.[index]?.id] || '')
                       setShowHint(false)
                     }}
                     className={`w-8 h-8 rounded-full text-sm font-medium ${
                       index === currentQuestionIndex
                         ? 'bg-primary-600 text-white'
-                        : responses[quiz.questions[index].id]
+                        : responses[quiz?.questions?.[index]?.id]
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-600'
                     }`}
