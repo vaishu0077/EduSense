@@ -156,7 +156,44 @@ export default function Quiz() {
         if (quizData.materialContent && quizData.aiAnalysis) {
           await generateQuizFromMaterial(quizData)
         } else {
-          setQuiz(quizData)
+          // Check if quiz has questions, if not create fallback
+          if (!quizData.questions || quizData.questions.length === 0) {
+            console.log('Quiz has no questions, creating fallback')
+            const fallbackQuiz = {
+              ...quizData,
+              questions: [
+                {
+                  id: 1,
+                  question_text: `What is the main topic of this ${quizData.topic || 'material'}?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'General concepts',
+                    'Advanced topics', 
+                    'Basic principles',
+                    'Complex theories'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'This question tests your understanding of the main topic'
+                },
+                {
+                  id: 2,
+                  question_text: `Which best describes this ${quizData.topic || 'material'} content?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'Educational content',
+                    'Technical documentation',
+                    'Research findings',
+                    'Practical guidelines'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'This question evaluates your comprehension of the material type'
+                }
+              ]
+            }
+            setQuiz(fallbackQuiz)
+          } else {
+            setQuiz(quizData)
+          }
           setLoading(false)
         }
         return
@@ -579,37 +616,45 @@ export default function Quiz() {
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {currentQuestion.question_type === 'multiple_choice' && currentQuestion.options ? (
-                  currentQuestion.options.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                        selectedAnswer === option
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="answer"
-                        value={option}
-                        checked={selectedAnswer === option}
-                        onChange={(e) => handleAnswerSelect(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
-                        selectedAnswer === option
-                          ? 'border-primary-500 bg-primary-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedAnswer === option && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                      <span className="text-gray-900">{option}</span>
-                    </label>
-                  ))
-                ) : (
+                {(() => {
+                  console.log('Current question:', currentQuestion)
+                  console.log('Question type:', currentQuestion.question_type)
+                  console.log('Options:', currentQuestion.options)
+                  console.log('Has options:', !!currentQuestion.options)
+                  
+                  if (currentQuestion.question_type === 'multiple_choice' && currentQuestion.options && currentQuestion.options.length > 0) {
+                    return currentQuestion.options.map((option, index) => (
+                      <label
+                        key={index}
+                        className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                          selectedAnswer === option
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="answer"
+                          value={option}
+                          checked={selectedAnswer === option}
+                          onChange={(e) => handleAnswerSelect(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
+                          selectedAnswer === option
+                            ? 'border-primary-500 bg-primary-500'
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedAnswer === option && (
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          )}
+                        </div>
+                        <span className="text-gray-900">{option}</span>
+                      </label>
+                    ))
+                  } else {
+                    console.log('Falling back to text input - no options available')
+                    return (
                   <div className="space-y-4">
                     <textarea
                       value={selectedAnswer}
@@ -637,7 +682,9 @@ export default function Quiz() {
                       )}
                     </button>
                   </div>
-                )}
+                    )
+                  }
+                })()}
               </div>
             </div>
           )}
