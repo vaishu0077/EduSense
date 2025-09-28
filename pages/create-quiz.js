@@ -180,6 +180,24 @@ export default function CreateQuiz() {
         </div>
       </header>
 
+      {/* Notice */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Brain className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-800">
+                <strong>Quiz Creator Mode:</strong> This page is for creating custom quizzes. 
+                The correct answers are shown here for quiz creators to set up the quiz properly. 
+                When students take the quiz, they won't see the correct answers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-lg p-8">
           {/* Quiz Settings */}
@@ -318,13 +336,11 @@ export default function CreateQuiz() {
                     <div className="space-y-2">
                       {question.options.map((option, optionIndex) => (
                         <div key={optionIndex} className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            name={`correct-${questionIndex}`}
-                            checked={question.correct_answer === optionIndex}
-                            onChange={() => updateQuestion(questionIndex, 'correct_answer', optionIndex)}
-                            className="h-4 w-4 text-indigo-600"
-                          />
+                          <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-500">
+                              {String.fromCharCode(65 + optionIndex)}
+                            </span>
+                          </div>
                           <input
                             type="text"
                             value={option}
@@ -334,6 +350,29 @@ export default function CreateQuiz() {
                           />
                         </div>
                       ))}
+                    </div>
+                    
+                    {/* Hidden correct answer selector for quiz creators */}
+                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        Correct Answer (Hidden from quiz takers)
+                      </label>
+                      <div className="space-y-2">
+                        {question.options.map((option, optionIndex) => (
+                          <label key={optionIndex} className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name={`correct-${questionIndex}`}
+                              checked={question.correct_answer === optionIndex}
+                              onChange={() => updateQuestion(questionIndex, 'correct_answer', optionIndex)}
+                              className="h-4 w-4 text-indigo-600"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {String.fromCharCode(65 + optionIndex)}: {option || `Option ${String.fromCharCode(65 + optionIndex)}`}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
