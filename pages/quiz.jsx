@@ -71,6 +71,16 @@ export default function Quiz() {
           material_content_preview: quizData.materialContent?.substring(0, 200) + '...'
         })
       
+      console.log('=== FRONTEND QUIZ DEBUG ===')
+      console.log('Sending request to /api/ai-quiz-generation')
+      console.log('Request payload:', {
+        content_length: quizData.materialContent?.length || 0,
+        filename: quizData.title || 'Material',
+        num_questions: quizData.numQuestions || 5,
+        difficulty: quizData.difficulty,
+        topic: quizData.topic
+      })
+
       const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
         headers: {
@@ -85,12 +95,19 @@ export default function Quiz() {
         })
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('Response error:', errorText)
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
       console.log('Quiz generation response:', data)
+      console.log('Response success:', data.success)
+      console.log('Questions count:', data.questions?.length || 0)
       
       if (data.success && data.questions) {
         console.log('Questions received:', data.questions)
