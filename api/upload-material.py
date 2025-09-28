@@ -121,13 +121,31 @@ def process_file_simple(filename, content, file_type, user_id):
 
 # Removed async functions to fix Vercel serverless function issues
 
+def get_available_gemini_key():
+    """Get an available Gemini API key from multiple options"""
+    # Try multiple API keys in order
+    api_keys = [
+        os.environ.get('GEMINI_API_KEY'),
+        os.environ.get('GEMINI_API_KEY_2'),
+        os.environ.get('GEMINI_API_KEY_3'),
+        os.environ.get('GEMINI_API_KEY_4'),
+        os.environ.get('GEMINI_API_KEY_5')
+    ]
+    
+    for i, key in enumerate(api_keys):
+        if key and key.strip():
+            print(f"Using Gemini API key {i+1}")
+            return key
+    
+    return None
+
 def analyze_content_with_ai_simple(content, filename):
-    """Analyze content using Gemini AI with enhanced approach"""
+    """Analyze content using Gemini AI with multiple API key support"""
     try:
-        # Check if Gemini API key is available
-        gemini_api_key = os.environ.get('GEMINI_API_KEY')
+        # Get available API key
+        gemini_api_key = get_available_gemini_key()
         if not gemini_api_key:
-            print("GEMINI_API_KEY not found, using enhanced fallback analysis")
+            print("No Gemini API keys found, using enhanced fallback analysis")
             return get_enhanced_fallback_analysis(content, filename)
         
         # Configure Gemini
@@ -173,27 +191,74 @@ def analyze_content_with_ai_simple(content, filename):
         """
         
         print(f"Analyzing content with Gemini API for file: {filename}")
-        response = model.generate_content(prompt)
-        print(f"Gemini response received: {response.text[:200]}...")
         
-        # Try to parse JSON response
+        # Try with current API key first
         try:
-            analysis = json.loads(response.text)
-            print("Successfully parsed Gemini JSON response")
-            return analysis
-        except json.JSONDecodeError as e:
-            print(f"JSON parsing failed: {e}")
-            print(f"Raw response: {response.text}")
-            # Try to extract JSON from response
-            import re
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
-            if json_match:
-                try:
-                    analysis = json.loads(json_match.group())
-                    print("Successfully extracted JSON from response")
-                    return analysis
-                except:
-                    pass
+            response = model.generate_content(prompt)
+            print(f"Gemini response received: {response.text[:200]}...")
+            
+            # Try to parse JSON response
+            try:
+                analysis = json.loads(response.text)
+                print("Successfully parsed Gemini JSON response")
+                return analysis
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing failed: {e}")
+                print(f"Raw response: {response.text}")
+                # Try to extract JSON from response
+                import re
+                json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+                if json_match:
+                    try:
+                        analysis = json.loads(json_match.group())
+                        print("Successfully extracted JSON from response")
+                        return analysis
+                    except:
+                        pass
+                
+                print("Failed to parse JSON, trying next API key...")
+                raise Exception("JSON parsing failed")
+                
+        except Exception as e:
+            print(f"Gemini API error with current key: {e}")
+            
+            # Try other API keys if current one fails
+            api_keys = [
+                os.environ.get('GEMINI_API_KEY_2'),
+                os.environ.get('GEMINI_API_KEY_3'),
+                os.environ.get('GEMINI_API_KEY_4'),
+                os.environ.get('GEMINI_API_KEY_5')
+            ]
+            
+            for i, alt_key in enumerate(api_keys):
+                if alt_key and alt_key.strip():
+                    try:
+                        print(f"Trying alternative Gemini API key {i+2}")
+                        genai.configure(api_key=alt_key)
+                        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                        response = model.generate_content(prompt)
+                        
+                        # Try to parse JSON
+                        try:
+                            analysis = json.loads(response.text)
+                            print(f"Successfully used alternative API key {i+2}")
+                            return analysis
+                        except json.JSONDecodeError:
+                            # Try to extract JSON
+                            import re
+                            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+                            if json_match:
+                                try:
+                                    analysis = json.loads(json_match.group())
+                                    print(f"Successfully extracted JSON with alternative API key {i+2}")
+                                    return analysis
+                                except json.JSONDecodeError:
+                                    continue
+                    except Exception as alt_e:
+                        print(f"Alternative API key {i+2} also failed: {alt_e}")
+                        continue
+            
+            print("All Gemini API keys failed, using enhanced fallback analysis")
             return get_enhanced_fallback_analysis(content, filename)
             
     except Exception as e:
