@@ -94,8 +94,8 @@ export default function TakeQuiz() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: quiz.topic,
-          difficulty: quiz.difficulty,
+          topic: quiz?.topic || 'General',
+          difficulty: quiz?.difficulty || 'medium',
           score: finalScore,
           total_questions: quiz?.questions?.length || 0,
           time_spent: 300 - timeLeft
@@ -202,7 +202,7 @@ export default function TakeQuiz() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{quiz?.title || 'Quiz'}</h1>
               <p className="text-gray-600">Question {currentQuestion + 1} of {quiz?.questions?.length || 0}</p>
             </div>
             <div className="flex items-center text-red-500">

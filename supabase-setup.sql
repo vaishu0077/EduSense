@@ -23,18 +23,29 @@ CREATE INDEX IF NOT EXISTS idx_study_materials_starred ON study_materials(starre
 -- Enable Row Level Security
 ALTER TABLE study_materials ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
-CREATE POLICY "Users can view their own materials" ON study_materials
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own materials" ON study_materials
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own materials" ON study_materials
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own materials" ON study_materials
-    FOR DELETE USING (auth.uid() = user_id);
+-- Create RLS policies (only if they don't exist)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'study_materials' AND policyname = 'Users can view their own materials') THEN
+        CREATE POLICY "Users can view their own materials" ON study_materials
+            FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'study_materials' AND policyname = 'Users can insert their own materials') THEN
+        CREATE POLICY "Users can insert their own materials" ON study_materials
+            FOR INSERT WITH CHECK (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'study_materials' AND policyname = 'Users can update their own materials') THEN
+        CREATE POLICY "Users can update their own materials" ON study_materials
+            FOR UPDATE USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'study_materials' AND policyname = 'Users can delete their own materials') THEN
+        CREATE POLICY "Users can delete their own materials" ON study_materials
+            FOR DELETE USING (auth.uid() = user_id);
+    END IF;
+END $$;
 
 -- Create user_sessions table for real-time features
 CREATE TABLE IF NOT EXISTS user_sessions (
@@ -56,12 +67,19 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_online ON user_sessions(is_online);
 -- Enable RLS for user_sessions
 ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for user_sessions
-CREATE POLICY "Users can view their own sessions" ON user_sessions
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can manage their own sessions" ON user_sessions
-    FOR ALL USING (auth.uid() = user_id);
+-- Create RLS policies for user_sessions (only if they don't exist)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_sessions' AND policyname = 'Users can view their own sessions') THEN
+        CREATE POLICY "Users can view their own sessions" ON user_sessions
+            FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_sessions' AND policyname = 'Users can manage their own sessions') THEN
+        CREATE POLICY "Users can manage their own sessions" ON user_sessions
+            FOR ALL USING (auth.uid() = user_id);
+    END IF;
+END $$;
 
 -- Grant permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON study_materials TO authenticated;
