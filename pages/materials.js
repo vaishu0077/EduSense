@@ -69,52 +69,7 @@ export default function Materials() {
   }
 
   const getDemoMaterials = () => [
-    {
-      id: 'demo-1',
-      filename: 'Calculus Fundamentals.pdf',
-      content: 'Calculus is the mathematical study of continuous change...',
-      ai_analysis: {
-        summary: 'Introduction to calculus concepts including derivatives and integrals',
-        key_topics: ['derivatives', 'integrals', 'limits'],
-        subject_category: 'mathematics',
-        difficulty_level: 'intermediate',
-        learning_objectives: ['Understand derivatives', 'Master integration techniques'],
-        key_concepts: ['Rate of change', 'Area under curve', 'Fundamental theorem'],
-        suggested_quiz_questions: [
-          {
-            question: 'What is the derivative of x²?',
-            difficulty: 'easy',
-            topic: 'derivatives'
-          }
-        ],
-        study_recommendations: ['Practice derivative rules', 'Work through integration examples']
-      },
-      word_count: 1500,
-      created_at: '2024-01-15T10:00:00Z'
-    },
-    {
-      id: 'demo-2',
-      filename: 'World War II History.docx',
-      content: 'World War II was a global war that lasted from 1939 to 1945...',
-      ai_analysis: {
-        summary: 'Comprehensive overview of World War II events and impact',
-        key_topics: ['battles', 'politics', 'economics'],
-        subject_category: 'history',
-        difficulty_level: 'intermediate',
-        learning_objectives: ['Understand war causes', 'Analyze war impact'],
-        key_concepts: ['Alliance systems', 'Economic factors', 'Political ideologies'],
-        suggested_quiz_questions: [
-          {
-            question: 'When did World War II begin?',
-            difficulty: 'easy',
-            topic: 'timeline'
-          }
-        ],
-        study_recommendations: ['Study timeline of events', 'Analyze causes and effects']
-      },
-      word_count: 2000,
-      created_at: '2024-01-14T15:30:00Z'
-    }
+    // No hardcoded demo materials - only show user's actual uploaded materials
   ]
 
   const handleFileUpload = (uploadResult) => {
