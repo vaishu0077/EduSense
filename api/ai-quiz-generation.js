@@ -42,8 +42,13 @@ export default async function handler(req, res) {
     console.log('Difficulty:', difficulty);
     console.log('Topic:', topic);
 
+    // Validate required parameters
+    if (!content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
     // Generate quiz questions
-    const result = await generateQuizQuestions(content, filename, num_questions, difficulty, topic);
+    const result = await generateQuizQuestions(content, filename || 'Material', num_questions || 5, difficulty || 'medium', topic || 'General');
 
     res.status(200).json(result);
   } catch (error) {
@@ -61,7 +66,7 @@ async function generateQuizQuestions(content, filename, numQuestions, difficulty
     // In a real implementation, you would use the Google Generative AI library
     console.log('Using fallback quiz generation (Gemini integration disabled)');
     
-    const questions = generateFallbackQuestions(numQuestions, topic, difficulty, content);
+    const questions = generateFallbackQuestions(numQuestions, topic, difficulty, content, filename);
     
     return {
       success: true,
@@ -74,13 +79,13 @@ async function generateQuizQuestions(content, filename, numQuestions, difficulty
     return {
       success: false,
       error: error.message,
-      questions: generateFallbackQuestions(numQuestions, topic, difficulty, content),
+      questions: generateFallbackQuestions(numQuestions, topic, difficulty, content, filename),
       generated_by: 'fallback-analysis'
     };
   }
 }
 
-function generateFallbackQuestions(numQuestions, topic, difficulty, content) {
+function generateFallbackQuestions(numQuestions, topic, difficulty, content, filename = 'Material') {
   const questions = [];
   
   // Generate content-specific questions based on filename and topic
