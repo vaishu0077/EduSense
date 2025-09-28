@@ -60,15 +60,16 @@ export default function Quiz() {
         console.log('Using AI generation instead of suggested questions for better options')
       }
 
-      // Use dedicated quiz generation API
-      console.log('Sending quiz generation request:', {
-        topic: quizData.topic,
-        difficulty: quizData.difficulty,
-        num_questions: quizData.numQuestions || 5,
-        time_limit: quizData.timeLimit,
-        material_content_length: quizData.materialContent?.length || 0,
-        has_ai_analysis: !!quizData.aiAnalysis
-      })
+        // Use dedicated quiz generation API
+        console.log('Sending quiz generation request:', {
+          topic: quizData.topic,
+          difficulty: quizData.difficulty,
+          num_questions: quizData.numQuestions || 5,
+          time_limit: quizData.timeLimit,
+          material_content_length: quizData.materialContent?.length || 0,
+          has_ai_analysis: !!quizData.aiAnalysis,
+          material_content_preview: quizData.materialContent?.substring(0, 200) + '...'
+        })
       
       const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
@@ -111,13 +112,13 @@ export default function Quiz() {
         questions: [
           {
             id: 1,
-            question_text: `What is the main topic of this ${quizData.topic} material?`,
+            question_text: `What is the main topic of this ${quizData.topic || 'Smart Cities'} material?`,
             question_type: 'multiple_choice',
             options: [
-              'General concepts',
-              'Advanced topics', 
-              'Basic principles',
-              'Complex theories'
+              'Smart city energy systems',
+              'General urban planning', 
+              'Basic infrastructure',
+              'Advanced technology'
             ],
             correct_answer: 0,
             explanation: 'This question tests your understanding of the main topic'
@@ -127,13 +128,52 @@ export default function Quiz() {
             question_text: `Which of the following best describes the content of this material?`,
             question_type: 'multiple_choice',
             options: [
-              'Educational content',
+              'Educational content about smart cities',
               'Technical documentation',
               'Research findings',
               'Practical guidelines'
             ],
             correct_answer: 0,
             explanation: 'This question evaluates your comprehension of the material type'
+          },
+          {
+            id: 3,
+            question_text: `What is a key concept in smart city energy management?`,
+            question_type: 'multiple_choice',
+            options: [
+              'Sustainable energy systems',
+              'Traditional power grids',
+              'Manual energy control',
+              'Basic electricity'
+            ],
+            correct_answer: 0,
+            explanation: 'Smart cities focus on sustainable and efficient energy systems'
+          },
+          {
+            id: 4,
+            question_text: `Which technology is commonly used in smart city infrastructure?`,
+            question_type: 'multiple_choice',
+            options: [
+              'IoT sensors and data analytics',
+              'Manual monitoring systems',
+              'Basic communication',
+              'Simple automation'
+            ],
+            correct_answer: 0,
+            explanation: 'Smart cities rely on IoT sensors and data analytics for efficient management'
+          },
+          {
+            id: 5,
+            question_text: `What is the primary goal of smart city energy systems?`,
+            question_type: 'multiple_choice',
+            options: [
+              'Optimize energy efficiency and sustainability',
+              'Increase energy consumption',
+              'Maintain traditional systems',
+              'Reduce technology usage'
+            ],
+            correct_answer: 0,
+            explanation: 'Smart city energy systems aim to optimize efficiency and sustainability'
           }
         ]
       }
@@ -163,29 +203,68 @@ export default function Quiz() {
               questions: [
                 {
                   id: 1,
-                  question_text: `What is the main topic of this ${quizData.topic || 'material'}?`,
+                  question_text: `What is the main topic of this ${quizData.topic || 'Smart Cities'} material?`,
                   question_type: 'multiple_choice',
                   options: [
-                    'General concepts',
-                    'Advanced topics', 
-                    'Basic principles',
-                    'Complex theories'
+                    'Smart city energy systems',
+                    'General urban planning', 
+                    'Basic infrastructure',
+                    'Advanced technology'
                   ],
                   correct_answer: 0,
                   explanation: 'This question tests your understanding of the main topic'
                 },
                 {
                   id: 2,
-                  question_text: `Which best describes this ${quizData.topic || 'material'} content?`,
+                  question_text: `Which best describes this ${quizData.topic || 'Smart Cities'} content?`,
                   question_type: 'multiple_choice',
                   options: [
-                    'Educational content',
+                    'Educational content about smart cities',
                     'Technical documentation',
                     'Research findings',
                     'Practical guidelines'
                   ],
                   correct_answer: 0,
                   explanation: 'This question evaluates your comprehension of the material type'
+                },
+                {
+                  id: 3,
+                  question_text: `What is a key concept in smart city energy management?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'Sustainable energy systems',
+                    'Traditional power grids',
+                    'Manual energy control',
+                    'Basic electricity'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'Smart cities focus on sustainable and efficient energy systems'
+                },
+                {
+                  id: 4,
+                  question_text: `Which technology is commonly used in smart city infrastructure?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'IoT sensors and data analytics',
+                    'Manual monitoring systems',
+                    'Basic communication',
+                    'Simple automation'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'Smart cities rely on IoT sensors and data analytics for efficient management'
+                },
+                {
+                  id: 5,
+                  question_text: `What is the primary goal of smart city energy systems?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'Optimize energy efficiency and sustainability',
+                    'Increase energy consumption',
+                    'Maintain traditional systems',
+                    'Reduce technology usage'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'Smart city energy systems aim to optimize efficiency and sustainability'
                 }
               ]
             }
