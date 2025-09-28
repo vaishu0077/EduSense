@@ -21,7 +21,8 @@
     "framer-motion": "^10.16.16",
     "date-fns": "^2.30.0",
     "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "@google/generative-ai": "^0.2.1"
   },
   "devDependencies": {
     "tailwindcss": "^3.3.6",
