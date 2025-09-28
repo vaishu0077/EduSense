@@ -100,11 +100,23 @@ export default function FileUpload({ onFileUpload, maxFiles = 5, acceptedTypes =
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Upload failed')
+        let errorMessage = 'Upload failed'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        } catch (jsonError) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
-      const result = await response.json()
+      let result
+      try {
+        result = await response.json()
+      } catch (jsonError) {
+        console.error('JSON parsing error:', jsonError)
+        throw new Error('Invalid response from server')
+      }
       
       // Update file status
       setFiles(prev => prev.map(f => 
