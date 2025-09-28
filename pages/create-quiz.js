@@ -286,111 +286,74 @@ export default function CreateQuiz() {
             </div>
           </div>
 
-          {/* Questions */}
+          {/* Quiz Status */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Questions</h2>
-              <button
-                onClick={addQuestion}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Question
-              </button>
+              <h2 className="text-2xl font-semibold text-gray-900">Quiz Status</h2>
+              {quizData.questions.length > 0 && (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">
+                    {quizData.questions.length} questions ready
+                  </span>
+                  <button
+                    onClick={startQuiz}
+                    className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Attempt Quiz
+                  </button>
+                </div>
+              )}
             </div>
 
-            {quizData.questions.map((question, questionIndex) => (
-              <div key={questionIndex} className="border border-gray-200 rounded-lg p-6 mb-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Question {questionIndex + 1}
-                  </h3>
-                  {quizData.questions.length > 1 && (
-                    <button
-                      onClick={() => removeQuestion(questionIndex)}
-                      className="text-red-600 hover:text-red-500"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  )}
+            {/* Quiz Summary - Hidden Questions */}
+            {quizData.questions.length > 0 ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0">
+                    <Brain className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-lg font-medium text-blue-900">
+                      Quiz Ready!
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Your quiz has been generated with {quizData.questions.length} questions.
+                      Click "Attempt Quiz" to start taking the quiz.
+                    </p>
+                  </div>
                 </div>
-
-                <div className="space-y-4">
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Question Text
-                    </label>
-                    <textarea
-                      value={question.question}
-                      onChange={(e) => updateQuestion(questionIndex, 'question', e.target.value)}
-                      placeholder="Enter your question"
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
+                    <span className="font-medium text-blue-900">Time Limit:</span>
+                    <span className="ml-2 text-blue-700">{quizData.timeLimit} minutes</span>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Options
-                    </label>
-                    <div className="space-y-2">
-                      {question.options.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center space-x-3">
-                          <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-500">
-                              {String.fromCharCode(65 + optionIndex)}
-                            </span>
-                          </div>
-                          <input
-                            type="text"
-                            value={option}
-                            onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
-                            placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Hidden correct answer selector for quiz creators */}
-                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                      <label className="block text-sm font-medium text-gray-600 mb-2">
-                        Correct Answer (Hidden from quiz takers)
-                      </label>
-                      <div className="space-y-2">
-                        {question.options.map((option, optionIndex) => (
-                          <label key={optionIndex} className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              name={`correct-${questionIndex}`}
-                              checked={question.correct_answer === optionIndex}
-                              onChange={() => updateQuestion(questionIndex, 'correct_answer', optionIndex)}
-                              className="h-4 w-4 text-indigo-600"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {String.fromCharCode(65 + optionIndex)}: {option || `Option ${String.fromCharCode(65 + optionIndex)}`}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                    <span className="font-medium text-blue-900">Difficulty:</span>
+                    <span className="ml-2 text-blue-700 capitalize">{quizData.difficulty}</span>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Explanation (Optional)
-                    </label>
-                    <textarea
-                      value={question.explanation}
-                      onChange={(e) => updateQuestion(questionIndex, 'explanation', e.target.value)}
-                      placeholder="Explain why this answer is correct"
-                      rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
+                    <span className="font-medium text-blue-900">Questions:</span>
+                    <span className="ml-2 text-blue-700">{quizData.questions.length}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-900">Topic:</span>
+                    <span className="ml-2 text-blue-700">{quizData.topic}</span>
                   </div>
                 </div>
               </div>
-            ))}
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Quiz Generated Yet
+                </h3>
+                <p className="text-gray-600">
+                  Click "Generate with AI" to create your quiz questions.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
