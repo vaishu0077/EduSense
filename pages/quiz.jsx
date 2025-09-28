@@ -60,19 +60,27 @@ export default function Quiz() {
         console.log('Using AI generation instead of suggested questions for better options')
       }
 
-      // If no suggested questions, generate from content using AI
-      const response = await fetch('/api/generate_quiz', {
+      // Use dedicated quiz generation API
+      console.log('Sending quiz generation request:', {
+        topic: quizData.topic,
+        difficulty: quizData.difficulty,
+        num_questions: quizData.numQuestions || 5,
+        time_limit: quizData.timeLimit,
+        material_content_length: quizData.materialContent?.length || 0,
+        has_ai_analysis: !!quizData.aiAnalysis
+      })
+      
+      const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: quizData.topic,
-          difficulty: quizData.difficulty,
+          content: quizData.materialContent,
+          filename: quizData.title || 'Material',
           num_questions: quizData.numQuestions || 5,
-          time_limit: quizData.timeLimit,
-          material_content: quizData.materialContent, // Pass the actual content
-          ai_analysis: quizData.aiAnalysis // Pass the AI analysis
+          difficulty: quizData.difficulty,
+          topic: quizData.topic
         })
       })
 
@@ -96,7 +104,43 @@ export default function Quiz() {
     } catch (error) {
       console.error('Error generating quiz from material:', error)
       toast.error('Failed to generate quiz from material content')
+      
+      // Create a fallback quiz with basic questions
+      const fallbackQuiz = {
+        ...quizData,
+        questions: [
+          {
+            id: 1,
+            question_text: `What is the main topic of this ${quizData.topic} material?`,
+            question_type: 'multiple_choice',
+            options: [
+              'General concepts',
+              'Advanced topics', 
+              'Basic principles',
+              'Complex theories'
+            ],
+            correct_answer: 0,
+            explanation: 'This question tests your understanding of the main topic'
+          },
+          {
+            id: 2,
+            question_text: `Which of the following best describes the content of this material?`,
+            question_type: 'multiple_choice',
+            options: [
+              'Educational content',
+              'Technical documentation',
+              'Research findings',
+              'Practical guidelines'
+            ],
+            correct_answer: 0,
+            explanation: 'This question evaluates your comprehension of the material type'
+          }
+        ]
+      }
+      
+      setQuiz(fallbackQuiz)
       setLoading(false)
+      toast.success('Quiz generated with fallback questions')
     }
   }
 
@@ -111,22 +155,60 @@ export default function Quiz() {
         if (quizData.materialContent && quizData.aiAnalysis) {
           await generateQuizFromMaterial(quizData)
         } else {
-          setQuiz(quizData)
+          // Check if quiz has questions, if not create fallback
+          if (!quizData.questions || quizData.questions.length === 0) {
+            console.log('Quiz has no questions, creating fallback')
+            const fallbackQuiz = {
+              ...quizData,
+              questions: [
+                {
+                  id: 1,
+                  question_text: `What is the main topic of this ${quizData.topic || 'material'}?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'General concepts',
+                    'Advanced topics', 
+                    'Basic principles',
+                    'Complex theories'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'This question tests your understanding of the main topic'
+                },
+                {
+                  id: 2,
+                  question_text: `Which best describes this ${quizData.topic || 'material'} content?`,
+                  question_type: 'multiple_choice',
+                  options: [
+                    'Educational content',
+                    'Technical documentation',
+                    'Research findings',
+                    'Practical guidelines'
+                  ],
+                  correct_answer: 0,
+                  explanation: 'This question evaluates your comprehension of the material type'
+                }
+              ]
+            }
+            setQuiz(fallbackQuiz)
+          } else {
+            setQuiz(quizData)
+          }
           setLoading(false)
         }
         return
       }
 
-      const response = await fetch('/api/generate_quiz', {
+      const response = await fetch('/api/ai-quiz-generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: router.query.topic || 'Mathematics',
-          difficulty: router.query.difficulty || 'medium',
+          content: 'General knowledge quiz content',
+          filename: `${router.query.topic || 'Mathematics'} Quiz`,
           num_questions: parseInt(router.query.num_questions) || 5,
-          time_limit: parseInt(router.query.time_limit) || 30
+          difficulty: router.query.difficulty || 'medium',
+          topic: router.query.topic || 'Mathematics'
         })
       })
       
@@ -534,37 +616,45 @@ export default function Quiz() {
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {currentQuestion.question_type === 'multiple_choice' && currentQuestion.options ? (
-                  currentQuestion.options.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                        selectedAnswer === option
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="answer"
-                        value={option}
-                        checked={selectedAnswer === option}
-                        onChange={(e) => handleAnswerSelect(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
-                        selectedAnswer === option
-                          ? 'border-primary-500 bg-primary-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedAnswer === option && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                      <span className="text-gray-900">{option}</span>
-                    </label>
-                  ))
-                ) : (
+                {(() => {
+                  console.log('Current question:', currentQuestion)
+                  console.log('Question type:', currentQuestion.question_type)
+                  console.log('Options:', currentQuestion.options)
+                  console.log('Has options:', !!currentQuestion.options)
+                  
+                  if (currentQuestion.question_type === 'multiple_choice' && currentQuestion.options && currentQuestion.options.length > 0) {
+                    return currentQuestion.options.map((option, index) => (
+                      <label
+                        key={index}
+                        className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                          selectedAnswer === option
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="answer"
+                          value={option}
+                          checked={selectedAnswer === option}
+                          onChange={(e) => handleAnswerSelect(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
+                          selectedAnswer === option
+                            ? 'border-primary-500 bg-primary-500'
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedAnswer === option && (
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          )}
+                        </div>
+                        <span className="text-gray-900">{option}</span>
+                      </label>
+                    ))
+                  } else {
+                    console.log('Falling back to text input - no options available')
+                    return (
                   <div className="space-y-4">
                     <textarea
                       value={selectedAnswer}
@@ -592,7 +682,9 @@ export default function Quiz() {
                       )}
                     </button>
                   </div>
-                )}
+                    )
+                  }
+                })()}
               </div>
             </div>
           )}

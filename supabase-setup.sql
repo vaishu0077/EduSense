@@ -1,0 +1,40 @@
+-- Create study_materials table
+CREATE TABLE IF NOT EXISTS study_materials (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    filename TEXT NOT NULL,
+    file_type TEXT,
+    file_size BIGINT,
+    content TEXT,
+    ai_analysis JSONB,
+    word_count INTEGER DEFAULT 0,
+    char_count INTEGER DEFAULT 0,
+    starred BOOLEAN DEFAULT FALSE,
+    tags TEXT[] DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_study_materials_user_id ON study_materials(user_id);
+CREATE INDEX IF NOT EXISTS idx_study_materials_created_at ON study_materials(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_study_materials_starred ON study_materials(starred);
+
+-- Enable Row Level Security
+ALTER TABLE study_materials ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies
+CREATE POLICY "Users can view their own materials" ON study_materials
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own materials" ON study_materials
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own materials" ON study_materials
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own materials" ON study_materials
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE, DELETE ON study_materials TO authenticated;

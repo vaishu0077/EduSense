@@ -162,62 +162,7 @@ SELECT
 FROM study_materials sm
 ORDER BY sm.created_at DESC;
 
--- Insert sample data for demo purposes
-INSERT INTO study_materials (
-    user_id,
-    filename,
-    file_type,
-    content,
-    ai_analysis,
-    word_count,
-    char_count
-) VALUES (
-    '00000000-0000-0000-0000-000000000000', -- Demo user ID
-    'Calculus Fundamentals.pdf',
-    'application/pdf',
-    'Calculus is the mathematical study of continuous change, in the same way that geometry is the study of shape and algebra is the study of generalizations of arithmetic operations. It has two major branches, differential calculus and integral calculus.',
-    '{
-        "summary": "Introduction to calculus concepts including derivatives and integrals",
-        "key_topics": ["derivatives", "integrals", "limits", "continuity"],
-        "subject_category": "mathematics",
-        "difficulty_level": "intermediate",
-        "learning_objectives": ["Understand derivatives", "Master integration techniques", "Apply calculus to real problems"],
-        "key_concepts": ["Rate of change", "Area under curve", "Fundamental theorem of calculus"],
-        "suggested_quiz_questions": [
-            {
-                "question": "What is the derivative of x²?",
-                "difficulty": "easy",
-                "topic": "derivatives"
-            }
-        ],
-        "study_recommendations": ["Practice derivative rules", "Work through integration examples", "Solve word problems"]
-    }'::JSONB,
-    150,
-    850
-), (
-    '00000000-0000-0000-0000-000000000000',
-    'World War II History.docx',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'World War II was a global war that lasted from 1939 to 1945. It involved the vast majority of the world''s countries—including all the great powers—forming two opposing military alliances: the Allies and the Axis powers.',
-    '{
-        "summary": "Comprehensive overview of World War II events and impact",
-        "key_topics": ["battles", "politics", "economics", "technology"],
-        "subject_category": "history",
-        "difficulty_level": "intermediate",
-        "learning_objectives": ["Understand war causes", "Analyze war impact", "Study key events"],
-        "key_concepts": ["Alliance systems", "Economic factors", "Political ideologies", "Military strategy"],
-        "suggested_quiz_questions": [
-            {
-                "question": "When did World War II begin?",
-                "difficulty": "easy",
-                "topic": "timeline"
-            }
-        ],
-        "study_recommendations": ["Study timeline of events", "Analyze causes and effects", "Examine primary sources"]
-    }'::JSONB,
-    200,
-    1200
-) ON CONFLICT DO NOTHING;
+-- No hardcoded demo materials - only user-uploaded materials will be stored
 
 -- Grant necessary permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON study_materials TO authenticated;
