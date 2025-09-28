@@ -61,19 +61,21 @@ export const RealtimeProvider = ({ children }) => {
           )
           .subscribe()
 
-        // Track user session (simplified - no frequent updates)
+        // Track user session (disabled temporarily to fix quiz issues)
         const trackSession = async () => {
           try {
-            await supabase
-              .from('user_sessions')
-              .upsert({
-                user_id: user.id,
-                is_online: true,
-                last_seen: new Date().toISOString(),
-                user_agent: navigator.userAgent
-              }, {
-                onConflict: 'user_id'
-              })
+            // Temporarily disabled user_sessions tracking to fix quiz functionality
+            // await supabase
+            //   .from('user_sessions')
+            //   .upsert({
+            //     user_id: user.id,
+            //     is_online: true,
+            //     last_seen: new Date().toISOString(),
+            //     user_agent: navigator.userAgent
+            //   }, {
+            //     onConflict: 'user_id'
+            //   })
+            console.log('User session tracking temporarily disabled')
           } catch (error) {
             console.error('Error tracking session:', error)
           }

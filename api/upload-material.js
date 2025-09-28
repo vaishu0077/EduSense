@@ -163,24 +163,53 @@ function getFallbackAnalysis(content, filename) {
     };
   }
 
-  // Default fallback
+  // Enhanced fallback based on content analysis
+  const contentLower = content.toLowerCase();
+  let detectedSubject = 'general';
+  let detectedTopics = [];
+  
+  // Detect subject based on content
+  if (contentLower.includes('smart') || contentLower.includes('city') || contentLower.includes('urban')) {
+    detectedSubject = 'engineering';
+    detectedTopics = ['Smart City Infrastructure', 'Urban Planning', 'Technology Integration', 'Sustainability'];
+  } else if (contentLower.includes('energy') || contentLower.includes('power') || contentLower.includes('electric')) {
+    detectedSubject = 'engineering';
+    detectedTopics = ['Energy Management', 'Renewable Energy', 'Power Systems', 'Efficiency'];
+  } else if (contentLower.includes('math') || contentLower.includes('calculus') || contentLower.includes('equation')) {
+    detectedSubject = 'mathematics';
+    detectedTopics = ['Mathematical Concepts', 'Problem Solving', 'Equations', 'Calculations'];
+  } else if (contentLower.includes('science') || contentLower.includes('physics') || contentLower.includes('chemistry')) {
+    detectedSubject = 'science';
+    detectedTopics = ['Scientific Principles', 'Experiments', 'Theory', 'Applications'];
+  }
+
   return {
-    summary: "Educational material uploaded successfully. Content analysis in progress.",
-    key_topics: ["Topic 1", "Topic 2", "Topic 3", "Topic 4"],
-    key_concepts: ["Concept 1", "Concept 2", "Concept 3"],
-    difficulty_level: "beginner",
-    subject_category: "general",
-    learning_objectives: ["Objective 1", "Objective 2", "Objective 3"],
-    study_recommendations: ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
+    summary: `Educational material uploaded successfully. This ${detectedSubject} content covers key concepts and provides valuable learning opportunities.`,
+    key_topics: detectedTopics.length > 0 ? detectedTopics : ["Core Concepts", "Fundamental Principles", "Key Applications", "Important Relationships"],
+    key_concepts: ["Fundamental Understanding", "Core Principles", "Key Applications", "Practical Skills"],
+    difficulty_level: "intermediate",
+    subject_category: detectedSubject,
+    learning_objectives: [
+      "Understand the fundamental concepts presented in the material",
+      "Apply the knowledge to practical scenarios",
+      "Analyze the relationships between different topics",
+      "Evaluate the importance of key principles"
+    ],
+    study_recommendations: [
+      "Review the material thoroughly to understand core concepts",
+      "Practice applying the knowledge through exercises",
+      "Connect the concepts to real-world applications",
+      "Seek additional resources for deeper understanding"
+    ],
     suggested_quiz_questions: [
       {
-        question: "What is the main topic of this material?",
-        topic: "General",
+        question: "What is the main focus of this educational material?",
+        topic: "Core Concepts",
         difficulty: "easy"
       },
       {
-        question: "Which concept is most important?",
-        topic: "General", 
+        question: "Which principle is most important for understanding this topic?",
+        topic: "Fundamental Principles", 
         difficulty: "medium"
       }
     ]
