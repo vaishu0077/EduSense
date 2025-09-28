@@ -90,8 +90,8 @@ def process_file_simple(filename, content, file_type, user_id):
         if len(content) > max_content_length:
             content = content[:max_content_length] + "... [Content truncated]"
         
-        # Generate AI analysis using separate calls
-        ai_analysis = await analyze_content_with_separate_calls(content, filename)
+        # Generate AI analysis using simple approach for now
+        ai_analysis = analyze_content_with_ai_simple(content, filename)
         
         # Save to database
         material_id = save_material_to_db_simple(filename, content, ai_analysis, user_id)
@@ -109,84 +109,17 @@ def process_file_simple(filename, content, file_type, user_id):
         
     except Exception as e:
         print(f"File processing error: {e}")
-        raise e
+        # Return proper error response
+        self.send_response(500)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps({
+            "success": False,
+            "error": f"File processing failed: {str(e)}"
+        }).encode('utf-8'))
 
-async def analyze_content_with_separate_calls(content, filename):
-    """Analyze content using separate API calls for each section"""
-    try:
-        import asyncio
-        import aiohttp
-        
-        # Make separate API calls for each section
-        async with aiohttp.ClientSession() as session:
-            # Call all APIs in parallel
-            tasks = [
-                call_ai_analysis_api(session, 'topics', content, filename),
-                call_ai_analysis_api(session, 'objectives', content, filename),
-                call_ai_analysis_api(session, 'concepts', content, filename),
-                call_ai_analysis_api(session, 'recommendations', content, filename)
-            ]
-            
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-            
-            # Process results
-            topics = results[0] if not isinstance(results[0], Exception) else ["Main Concepts", "Key Ideas", "Important Points", "Core Topics"]
-            objectives = results[1] if not isinstance(results[1], Exception) else ["Understand main concepts", "Apply knowledge", "Analyze relationships"]
-            concepts = results[2] if not isinstance(results[2], Exception) else ["Core Principles", "Fundamental Concepts", "Key Ideas"]
-            recommendations = results[3] if not isinstance(results[3], Exception) else ["Read systematically", "Create concept maps", "Practice with examples"]
-            
-            return {
-                "summary": f"This {filename} material contains key concepts and principles. The content focuses on {', '.join(topics[:2])} and provides insights into practical applications.",
-                "key_topics": topics,
-                "key_concepts": concepts,
-                "difficulty_level": "intermediate",
-                "subject_category": "general",
-                "learning_objectives": objectives,
-                "study_recommendations": recommendations,
-                "suggested_quiz_questions": [
-                    {
-                        "question": f"What is the main focus of this {filename} material?",
-                        "topic": topics[0] if topics else "General",
-                        "difficulty": "easy"
-                    },
-                    {
-                        "question": f"Explain one key concept from this {filename} content",
-                        "topic": topics[1] if len(topics) > 1 else "Core Concepts",
-                        "difficulty": "medium"
-                    }
-                ]
-            }
-            
-    except Exception as e:
-        print(f"Separate AI analysis error: {e}")
-        # Fallback to simple analysis
-        return analyze_content_with_ai_simple(content, filename)
-
-async def call_ai_analysis_api(session, analysis_type, content, filename):
-    """Call specific AI analysis API"""
-    try:
-        url = f'https://edusense-brown.vercel.app/api/ai-analysis-{analysis_type}'
-        data = {
-            'content': content,
-            'filename': filename
-        }
-        
-        async with session.post(url, json=data) as response:
-            if response.status == 200:
-                result = await response.json()
-                if result.get('success'):
-                    if analysis_type == 'topics':
-                        return result.get('topics', [])
-                    elif analysis_type == 'objectives':
-                        return result.get('objectives', [])
-                    elif analysis_type == 'concepts':
-                        return result.get('concepts', [])
-                    elif analysis_type == 'recommendations':
-                        return result.get('recommendations', [])
-            return []
-    except Exception as e:
-        print(f"API call error for {analysis_type}: {e}")
-        return []
+# Removed async functions to fix Vercel serverless function issues
 
 def analyze_content_with_ai_simple(content, filename):
     """Analyze content using Gemini AI with enhanced approach"""
