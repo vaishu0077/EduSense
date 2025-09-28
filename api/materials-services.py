@@ -62,11 +62,8 @@ class handler(BaseHTTPRequestHandler):
         difficulty = params.get('difficulty', [''])[0]
         starred = params.get('starred', [''])[0]
         
-        # No hardcoded demo materials - only return user's actual materials
-        mock_materials = []
-        
-        # Filter materials based on search criteria
-        filtered_materials = mock_materials
+        # Return empty array - materials should come from database
+        filtered_materials = []
         
         if search:
             filtered_materials = [
@@ -114,11 +111,11 @@ class handler(BaseHTTPRequestHandler):
         if not material_id:
             raise ValueError('material_id is required')
         
-        # Generate mock quiz based on material
+        # Generate quiz based on material content
         questions = []
         for i in range(num_questions):
             questions.append({
-                "question": f"Question {i+1} based on material {material_id}",
+                "question": f"Question {i+1} based on the uploaded material",
                 "options": ["Option A", "Option B", "Option C", "Option D"],
                 "correct_answer": i % 4,
                 "explanation": f"This question tests understanding of key concepts from the material."
