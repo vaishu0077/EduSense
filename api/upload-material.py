@@ -85,30 +85,60 @@ def process_file_simple(filename, content, file_type, user_id):
         if not content or not content.strip():
             raise ValueError('No content found in file')
         
-        # Extract meaningful text from PDF content
+        # Extract meaningful text from PDF content using proper PDF parsing
         if filename.lower().endswith('.pdf'):
-            # Try to extract actual text content from PDF
-            import re
-            
-            # Remove PDF metadata and extract text content
-            # Look for text between BT (Begin Text) and ET (End Text) markers
-            text_pattern = r'BT\s+(.*?)\s+ET'
-            text_matches = re.findall(text_pattern, content, re.DOTALL)
-            
-            if text_matches:
-                # Extract text from PDF text objects
-                extracted_text = ' '.join(text_matches)
-                # Clean up PDF text formatting
-                extracted_text = re.sub(r'[^\w\s\.\,\!\?\;\:\-\(\)]', ' ', extracted_text)
-                extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+            try:
+                # Use PyPDF2 for proper PDF text extraction
+                import io
+                import PyPDF2
                 
-                if len(extracted_text) > 100:  # Only use if we got meaningful text
-                    content = extracted_text
-                    print(f"Extracted {len(extracted_text)} characters of text from PDF")
+                # Create a file-like object from the content
+                pdf_file = io.BytesIO(content.encode('latin-1'))
+                reader = PyPDF2.PdfReader(pdf_file)
+                
+                # Extract text from all pages
+                extracted_text = ""
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        extracted_text += page_text + "\n"
+                
+                # Clean up the extracted text
+                if extracted_text.strip():
+                    # Remove extra whitespace and clean formatting
+                    extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+                    
+                    if len(extracted_text) > 100:  # Only use if we got meaningful text
+                        content = extracted_text
+                        print(f"Successfully extracted {len(extracted_text)} characters of text from PDF using PyPDF2")
+                    else:
+                        print("PDF text extraction yielded minimal content, using original")
                 else:
-                    print("PDF text extraction yielded minimal content, using original")
-            else:
-                print("No text content found in PDF, using original content")
+                    print("No text content found in PDF, using original content")
+                    
+            except Exception as e:
+                print(f"PyPDF2 extraction failed: {e}")
+                # Fallback to regex-based extraction
+                try:
+                    import re
+                    text_pattern = r'BT\s+(.*?)\s+ET'
+                    text_matches = re.findall(text_pattern, content, re.DOTALL)
+                    
+                    if text_matches:
+                        extracted_text = ' '.join(text_matches)
+                        extracted_text = re.sub(r'[^\w\s\.\,\!\?\;\:\-\(\)]', ' ', extracted_text)
+                        extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+                        
+                        if len(extracted_text) > 100:
+                            content = extracted_text
+                            print(f"Fallback extraction yielded {len(extracted_text)} characters")
+                        else:
+                            print("Fallback extraction yielded minimal content")
+                    else:
+                        print("No text content found in PDF using fallback method")
+                except Exception as fallback_error:
+                    print(f"Fallback extraction also failed: {fallback_error}")
+                    print("Using original content")
         
         # Limit content length for processing
         max_content_length = 10000  # 10KB limit for AI processing
@@ -179,33 +209,35 @@ def analyze_content_with_ai_simple(content, filename):
         
         # Enhanced prompt for better analysis
         prompt = f"""
-        You are an expert educational content analyzer. Analyze this educational material thoroughly:
+        Analyze this educational document and provide a comprehensive educational analysis.
 
-        FILENAME: "{filename}"
-        CONTENT: {content[:2000]}...
+        Document: {filename}
+        Content: {content[:3000]}
 
-        Provide a detailed educational analysis in JSON format:
+        Please provide your analysis in the following JSON format:
         {{
-            "summary": "Comprehensive 2-3 sentence summary explaining the main concepts and learning objectives",
-            "key_topics": ["Extract 4-6 specific topics from the content"],
-            "key_concepts": ["Identify 3-5 key concepts or principles"],
+            "summary": "A concise 2-3 sentence summary of the main concepts and learning objectives",
+            "key_topics": ["List 4-6 specific topics covered in the document"],
+            "key_concepts": ["Identify 3-5 key concepts or principles discussed"],
             "difficulty_level": "beginner|intermediate|advanced",
-            "subject_category": "mathematics|science|history|english|physics|chemistry|biology|general",
-            "learning_objectives": ["Create 3-4 specific learning objectives"],
+            "subject_category": "mathematics|science|history|english|physics|chemistry|biology|engineering|general",
+            "learning_objectives": ["Create 3-4 specific learning objectives based on the content"],
             "study_recommendations": ["Provide 3-4 actionable study recommendations"],
             "suggested_quiz_questions": [
                 {{
-                    "question": "Create a specific question based on the content",
-                    "topic": "related topic from the content",
+                    "question": "Create a specific question based on the actual content",
+                    "topic": "specific topic from the content",
                     "difficulty": "easy|medium|hard"
                 }},
                 {{
-                    "question": "Create another question based on the content",
-                    "topic": "different topic from the content", 
+                    "question": "Create another specific question based on the actual content",
+                    "topic": "specific topic from the content", 
                     "difficulty": "easy|medium|hard"
                 }}
             ]
         }}
+
+        Focus on the actual content and concepts discussed in the document, not PDF structure or metadata.
 
         IMPORTANT: 
         - Base all analysis on the actual content provided
