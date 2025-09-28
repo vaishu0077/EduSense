@@ -141,30 +141,35 @@ def generate_quiz_questions(content, filename, num_questions, difficulty, topic)
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
         print("Gemini model configured successfully")
         
-        prompt = f"""Create {num_questions} {difficulty} level quiz questions based on this material:
+        prompt = f"""Create {num_questions} multiple-choice questions (MCQs) from this study material.
 
-FILENAME: {filename}
-TOPIC: {topic}
-CONTENT: {content[:2000]}...
+Document: {filename}
+Content: {content[:3000]}
 
-Return ONLY a JSON array of quiz questions with this exact structure:
+Requirements:
+- Each question must have 4 options (A, B, C, D)
+- Provide the correct answer after each question
+- Make sure questions test understanding, not just memory
+- Base questions on the actual content provided
+- Make questions appropriate for {difficulty} difficulty level
+- Focus on key concepts and important information from the material
+
+Return ONLY a JSON array with this exact structure:
 [
   {{
-    "question": "Your question here",
+    "question": "Your question here based on the content",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correct_answer": 0,
     "explanation": "Why this answer is correct"
   }}
 ]
 
-Requirements:
-- Create questions based on the actual content provided
+Important:
+- Create questions based on the specific content provided
 - Each question must have exactly 4 options
 - correct_answer must be 0, 1, 2, or 3 (index of correct option)
-- Make questions appropriate for {difficulty} difficulty
-- Focus on understanding the material content
 - Return only valid JSON, no additional text
-- Base questions on the specific content, not generic topics"""
+- Focus on understanding the material content, not generic topics"""
 
         print("Sending request to Gemini API...")
         response = model.generate_content(prompt)
@@ -272,16 +277,22 @@ def generate_content_based_fallback(content, filename, num_questions, topic):
     if 'smart' in content_lower and 'city' in content_lower:
         questions = [
             {
-                "question": "What is the main focus of smart city development?",
-                "options": ["Technology integration", "Population growth", "Economic policies", "Social programs"],
+                "question": "What is the primary goal of smart city development?",
+                "options": ["Improve urban living through technology", "Increase population density", "Reduce government spending", "Eliminate traditional infrastructure"],
                 "correct_answer": 0,
-                "explanation": "Smart cities focus on integrating technology to improve urban living"
+                "explanation": "Smart cities aim to enhance urban living through technological integration"
             },
             {
-                "question": "Which technology is most important for smart cities?",
-                "options": ["IoT devices", "Traditional infrastructure", "Manual systems", "Paper records"],
+                "question": "Which technology is most essential for smart city infrastructure?",
+                "options": ["Internet of Things (IoT) sensors", "Traditional paper systems", "Manual data collection", "Basic telephone networks"],
                 "correct_answer": 0,
-                "explanation": "IoT devices are essential for collecting data in smart cities"
+                "explanation": "IoT sensors are fundamental for collecting real-time data in smart cities"
+            },
+            {
+                "question": "What is a key benefit of smart city implementation?",
+                "options": ["Improved efficiency and sustainability", "Increased manual labor", "Higher energy consumption", "Reduced technology usage"],
+                "correct_answer": 0,
+                "explanation": "Smart cities provide improved efficiency and environmental sustainability"
             }
         ]
     elif 'energy' in content_lower:
@@ -297,6 +308,27 @@ def generate_content_based_fallback(content, filename, num_questions, topic):
                 "options": ["Solar power", "Coal", "Natural gas", "Oil"],
                 "correct_answer": 0,
                 "explanation": "Solar power is a renewable energy source that doesn't deplete"
+            }
+        ]
+    elif 'urban' in content_lower or 'development' in content_lower:
+        questions = [
+            {
+                "question": "What is the main focus of urban development trends?",
+                "options": ["Sustainable growth and technology integration", "Population reduction", "Traditional methods only", "Avoiding innovation"],
+                "correct_answer": 0,
+                "explanation": "Modern urban development focuses on sustainable growth and technology integration"
+            },
+            {
+                "question": "Which approach is most effective for modern urban planning?",
+                "options": ["Data-driven decision making", "Random development", "Ignoring technology", "Avoiding data"],
+                "correct_answer": 0,
+                "explanation": "Data-driven approaches enable more effective and sustainable urban planning"
+            },
+            {
+                "question": "What is a key benefit of smart urban infrastructure?",
+                "options": ["Improved efficiency and sustainability", "Increased manual work", "Higher costs", "Reduced technology"],
+                "correct_answer": 0,
+                "explanation": "Smart urban infrastructure provides improved efficiency and environmental sustainability"
             }
         ]
     elif 'calculus' in content_lower or 'derivative' in content_lower:

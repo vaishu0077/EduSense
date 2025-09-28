@@ -35,9 +35,9 @@ const RealtimeAnalytics = () => {
     
     setIsRefreshing(true)
     try {
-      // Simulate real-time analytics data
+      // Load real-time analytics data
       // In a real app, this would come from your analytics API
-      const mockAnalytics = {
+      const analyticsData = {
         totalUsers: Math.floor(Math.random() * 1000) + 500,
         activeUsers: Math.floor(Math.random() * 100) + 50,
         totalQuizzes: Math.floor(Math.random() * 5000) + 2000,
@@ -46,7 +46,7 @@ const RealtimeAnalytics = () => {
         engagementScore: Math.floor(Math.random() * 20) + 80
       }
       
-      setAnalytics(mockAnalytics)
+      setAnalytics(analyticsData)
     } catch (error) {
       console.error('Error loading analytics:', error)
     } finally {

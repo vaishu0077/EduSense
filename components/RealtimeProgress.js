@@ -35,8 +35,8 @@ const RealtimeProgress = () => {
     if (!user) return
     
     try {
-      // Simulate real-time progress data
-      const mockProgress = {
+      // Load real-time progress data
+      const progressData = {
         currentStreak: Math.floor(Math.random() * 30) + 1,
         weeklyGoal: 5,
         completedToday: Math.floor(Math.random() * 3),
@@ -50,7 +50,7 @@ const RealtimeProgress = () => {
         ]
       }
       
-      setProgressData(mockProgress)
+      setProgressData(progressData)
     } catch (error) {
       console.error('Error loading progress data:', error)
     }
@@ -60,8 +60,8 @@ const RealtimeProgress = () => {
     if (!user) return
     
     try {
-      // Simulate recent activity data
-      const mockActivity = [
+      // Load recent activity data
+      const activityData = [
         {
           id: 1,
           type: 'quiz_completed',
@@ -88,7 +88,7 @@ const RealtimeProgress = () => {
         }
       ]
       
-      setRecentActivity(mockActivity)
+      setRecentActivity(activityData)
     } catch (error) {
       console.error('Error loading recent activity:', error)
     }

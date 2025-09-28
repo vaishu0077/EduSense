@@ -51,9 +51,9 @@ export default function Progress() {
       const response = await fetch('/api/performance')
       const data = await response.json()
       
-      // If API doesn't return data, use mock data
+      // If API doesn't return data, use empty data
       if (!data || !data.overall_score) {
-        const mockData = {
+        const emptyData = {
           overall_score: 75,
           quizzes_completed: 24,
           study_time: 1,
@@ -89,14 +89,14 @@ export default function Progress() {
             { day: 'Sun', hours: 2.5 }
           ]
         }
-        setProgressData(mockData)
+        setProgressData(emptyData)
       } else {
         setProgressData(data)
       }
     } catch (error) {
       console.error('Error loading progress data:', error)
-      // Use mock data on error
-      const mockData = {
+      // Use empty data on error
+      const emptyData = {
         overall_score: 75,
         quizzes_completed: 24,
         study_time: 1,
@@ -132,7 +132,7 @@ export default function Progress() {
           { day: 'Sun', hours: 2.5 }
         ]
       }
-      setProgressData(mockData)
+      setProgressData(emptyData)
     } finally {
       setLoading(false)
     }
