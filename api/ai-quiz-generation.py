@@ -7,8 +7,23 @@ import json
 import google.generativeai as genai
 from http.server import BaseHTTPRequestHandler
 
-# Configure Gemini
-genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
+# Multi-API key support for Gemini
+def get_available_gemini_key():
+    """Get an available Gemini API key from multiple options"""
+    api_keys = [
+        os.environ.get('GEMINI_API_KEY'),
+        os.environ.get('GEMINI_API_KEY_2'),
+        os.environ.get('GEMINI_API_KEY_3'),
+        os.environ.get('GEMINI_API_KEY_4'),
+        os.environ.get('GEMINI_API_KEY_5')
+    ]
+    
+    for i, key in enumerate(api_keys):
+        if key and key.strip():
+            print(f"Using Gemini API key {i+1} for quiz generation")
+            return key
+    
+    return None
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -69,11 +84,13 @@ class handler(BaseHTTPRequestHandler):
 def generate_quiz_questions(content, filename, num_questions, difficulty, topic):
     """Generate quiz questions using Gemini AI"""
     try:
-        # Check if API key is available
-        api_key = os.environ.get('GEMINI_API_KEY')
+        # Get available API key
+        api_key = get_available_gemini_key()
         if not api_key:
-            raise Exception("GEMINI_API_KEY not found")
+            raise Exception("No Gemini API keys found")
         
+        # Configure Gemini with available key
+        genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
         prompt = f"""Create {num_questions} {difficulty} level quiz questions based on this material:
@@ -138,7 +155,49 @@ Requirements:
                 raise Exception("Could not parse questions")
                 
     except Exception as e:
-        print(f"AI quiz generation error: {e}")
+        print(f"AI quiz generation error with current key: {e}")
+        
+        # Try other API keys if current one fails
+        api_keys = [
+            os.environ.get('GEMINI_API_KEY_2'),
+            os.environ.get('GEMINI_API_KEY_3'),
+            os.environ.get('GEMINI_API_KEY_4'),
+            os.environ.get('GEMINI_API_KEY_5')
+        ]
+        
+        for i, alt_key in enumerate(api_keys):
+            if alt_key and alt_key.strip():
+                try:
+                    print(f"Trying alternative Gemini API key {i+2} for quiz generation")
+                    genai.configure(api_key=alt_key)
+                    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                    response = model.generate_content(prompt)
+                    
+                    # Try to parse response
+                    try:
+                        questions = json.loads(response.text.strip())
+                        if isinstance(questions, list) and len(questions) > 0:
+                            return {
+                                "success": True,
+                                "questions": questions,
+                                "generated_by": f"gemini-2.0-flash-exp-key-{i+2}"
+                            }
+                    except json.JSONDecodeError:
+                        # Try to extract array
+                        import re
+                        array_match = re.search(r'\[.*?\]', response.text, re.DOTALL)
+                        if array_match:
+                            questions = json.loads(array_match.group())
+                            return {
+                                "success": True,
+                                "questions": questions,
+                                "generated_by": f"gemini-2.0-flash-exp-key-{i+2}"
+                            }
+                except Exception as alt_e:
+                    print(f"Alternative API key {i+2} also failed: {alt_e}")
+                    continue
+        
+        print("All Gemini API keys failed, using fallback questions")
         # Return fallback questions based on content
         return {
             "success": True,
