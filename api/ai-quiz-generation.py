@@ -34,6 +34,36 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
+    def do_GET(self):
+        """Handle GET requests for testing"""
+        try:
+            # Test API status
+            api_key = get_available_gemini_key()
+            status = {
+                "api_status": "working",
+                "gemini_key_available": bool(api_key),
+                "gemini_key_preview": api_key[:10] + "..." if api_key else "None",
+                "environment_keys": {
+                    "GEMINI_API_KEY": bool(os.environ.get('GEMINI_API_KEY')),
+                    "GEMINI_API_KEY_2": bool(os.environ.get('GEMINI_API_KEY_2')),
+                    "GEMINI_API_KEY_3": bool(os.environ.get('GEMINI_API_KEY_3')),
+                    "GEMINI_API_KEY_4": bool(os.environ.get('GEMINI_API_KEY_4')),
+                    "GEMINI_API_KEY_5": bool(os.environ.get('GEMINI_API_KEY_5'))
+                }
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(status).encode('utf-8'))
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+
     def do_POST(self):
         """Handle POST requests for quiz generation"""
         try:
@@ -54,7 +84,18 @@ class handler(BaseHTTPRequestHandler):
             difficulty = data.get('difficulty', 'intermediate')
             topic = data.get('topic', 'General')
             
-            print(f"Generating {num_questions} quiz questions for: {filename}")
+            print(f"=== QUIZ GENERATION DEBUG ===")
+            print(f"Content length: {len(content)}")
+            print(f"Content preview: {content[:200]}...")
+            print(f"Filename: {filename}")
+            print(f"Num questions: {num_questions}")
+            print(f"Difficulty: {difficulty}")
+            print(f"Topic: {topic}")
+            print(f"API Keys available: {bool(os.environ.get('GEMINI_API_KEY'))}")
+            print(f"API Key 2 available: {bool(os.environ.get('GEMINI_API_KEY_2'))}")
+            print(f"API Key 3 available: {bool(os.environ.get('GEMINI_API_KEY_3'))}")
+            print(f"API Key 4 available: {bool(os.environ.get('GEMINI_API_KEY_4'))}")
+            print(f"API Key 5 available: {bool(os.environ.get('GEMINI_API_KEY_5'))}")
             
             # Generate quiz questions
             result = generate_quiz_questions(content, filename, num_questions, difficulty, topic)
@@ -84,14 +125,21 @@ class handler(BaseHTTPRequestHandler):
 def generate_quiz_questions(content, filename, num_questions, difficulty, topic):
     """Generate quiz questions using Gemini AI"""
     try:
+        print(f"=== GENERATE QUIZ QUESTIONS DEBUG ===")
+        print(f"Starting quiz generation for: {filename}")
+        
         # Get available API key
         api_key = get_available_gemini_key()
         if not api_key:
+            print("ERROR: No Gemini API keys found")
             raise Exception("No Gemini API keys found")
+        
+        print(f"Using API key: {api_key[:10]}...")
         
         # Configure Gemini with available key
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        print("Gemini model configured successfully")
         
         prompt = f"""Create {num_questions} {difficulty} level quiz questions based on this material:
 
@@ -118,11 +166,16 @@ Requirements:
 - Return only valid JSON, no additional text
 - Base questions on the specific content, not generic topics"""
 
+        print("Sending request to Gemini API...")
         response = model.generate_content(prompt)
+        print(f"Gemini response received, length: {len(response.text)}")
+        print(f"Response preview: {response.text[:300]}...")
         
         # Parse the response
         try:
+            print("Attempting to parse JSON response...")
             questions = json.loads(response.text.strip())
+            print(f"Successfully parsed JSON, got {len(questions)} questions")
             if isinstance(questions, list) and len(questions) > 0:
                 # Validate each question
                 for i, question in enumerate(questions):
@@ -139,19 +192,25 @@ Requirements:
                     "generated_by": "gemini-2.0-flash-exp"
                 }
             else:
+                print("ERROR: Invalid questions format - not a list or empty")
                 raise Exception("Invalid questions format")
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            print(f"JSON parsing error: {e}")
+            print(f"Raw response: {response.text}")
             # Try to extract array from response
             import re
             array_match = re.search(r'\[.*?\]', response.text, re.DOTALL)
             if array_match:
+                print("Found array pattern in response, attempting to parse...")
                 questions = json.loads(array_match.group())
+                print(f"Successfully extracted {len(questions)} questions from pattern")
                 return {
                     "success": True,
                     "questions": questions,
                     "generated_by": "gemini-2.0-flash-exp"
                 }
             else:
+                print("ERROR: Could not find array pattern in response")
                 raise Exception("Could not parse questions")
                 
     except Exception as e:
