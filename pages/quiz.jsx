@@ -718,7 +718,7 @@ export default function Quiz() {
                   console.log('Options:', currentQuestion.options)
                   console.log('Has options:', !!currentQuestion.options)
                   
-                  if (currentQuestion.question_type === 'multiple_choice' && currentQuestion.options && currentQuestion.options.length > 0) {
+                  if (currentQuestion.options && currentQuestion.options.length > 0) {
                     return currentQuestion.options.map((option, index) => (
                       <label
                         key={index}

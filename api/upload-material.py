@@ -85,6 +85,31 @@ def process_file_simple(filename, content, file_type, user_id):
         if not content or not content.strip():
             raise ValueError('No content found in file')
         
+        # Extract meaningful text from PDF content
+        if filename.lower().endswith('.pdf'):
+            # Try to extract actual text content from PDF
+            import re
+            
+            # Remove PDF metadata and extract text content
+            # Look for text between BT (Begin Text) and ET (End Text) markers
+            text_pattern = r'BT\s+(.*?)\s+ET'
+            text_matches = re.findall(text_pattern, content, re.DOTALL)
+            
+            if text_matches:
+                # Extract text from PDF text objects
+                extracted_text = ' '.join(text_matches)
+                # Clean up PDF text formatting
+                extracted_text = re.sub(r'[^\w\s\.\,\!\?\;\:\-\(\)]', ' ', extracted_text)
+                extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+                
+                if len(extracted_text) > 100:  # Only use if we got meaningful text
+                    content = extracted_text
+                    print(f"Extracted {len(extracted_text)} characters of text from PDF")
+                else:
+                    print("PDF text extraction yielded minimal content, using original")
+            else:
+                print("No text content found in PDF, using original content")
+        
         # Limit content length for processing
         max_content_length = 10000  # 10KB limit for AI processing
         if len(content) > max_content_length:
@@ -283,7 +308,8 @@ def get_enhanced_fallback_analysis(content, filename):
             'english': ['literature', 'poetry', 'novel', 'writing', 'grammar', 'essay', 'language'],
             'physics': ['physics', 'force', 'energy', 'motion', 'quantum', 'mechanics', 'thermodynamics'],
             'chemistry': ['chemistry', 'chemical', 'molecule', 'reaction', 'compound', 'element', 'bond'],
-            'biology': ['biology', 'cell', 'organism', 'evolution', 'genetics', 'ecosystem', 'species']
+            'biology': ['biology', 'cell', 'organism', 'evolution', 'genetics', 'ecosystem', 'species'],
+            'engineering': ['engineering', 'design', 'system', 'technology', 'development', 'urban', 'city', 'smart', 'infrastructure', 'trends', 'development']
         }
         
         detected_subject = 'general'
