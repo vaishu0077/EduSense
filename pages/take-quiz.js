@@ -27,7 +27,7 @@ export default function TakeQuiz() {
     if (storedQuiz) {
       const quizData = JSON.parse(storedQuiz)
       setQuiz(quizData)
-      setAnswers(new Array(quizData.questions.length).fill(null))
+      setAnswers(new Array(quizData?.questions?.length || 0).fill(null))
       // Set time limit from quiz data (convert minutes to seconds)
       if (quizData.timeLimit) {
         setTimeLeft(quizData.timeLimit * 60)
@@ -57,7 +57,7 @@ export default function TakeQuiz() {
   }
 
   const handleNextQuestion = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
+    if (currentQuestion < (quiz?.questions?.length || 1) - 1) {
       setCurrentQuestion(currentQuestion + 1)
       setSelectedAnswer(answers[currentQuestion + 1])
     } else {
@@ -74,7 +74,7 @@ export default function TakeQuiz() {
 
   const handleFinishQuiz = () => {
     let correctAnswers = 0
-    quiz.questions.forEach((question, index) => {
+    quiz?.questions?.forEach((question, index) => {
       if (answers[index] === question.correct_answer) {
         correctAnswers++
       }
@@ -97,7 +97,7 @@ export default function TakeQuiz() {
           topic: quiz.topic,
           difficulty: quiz.difficulty,
           score: finalScore,
-          total_questions: quiz.questions.length,
+          total_questions: quiz?.questions?.length || 0,
           time_spent: 300 - timeLeft
         })
       })
@@ -125,7 +125,7 @@ export default function TakeQuiz() {
   }
 
   if (showResults) {
-    const percentage = Math.round((score / quiz.questions.length) * 100)
+    const percentage = Math.round((score / (quiz?.questions?.length || 1)) * 100)
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -139,7 +139,7 @@ export default function TakeQuiz() {
             </div>
             
             <p className="text-xl text-gray-600 mb-6">
-              You scored {score} out of {quiz.questions.length} questions correctly
+              You scored {score} out of {quiz?.questions?.length || 0} questions correctly
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -193,7 +193,7 @@ export default function TakeQuiz() {
     )
   }
 
-  const currentQ = quiz.questions[currentQuestion]
+  const currentQ = quiz?.questions?.[currentQuestion]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -203,7 +203,7 @@ export default function TakeQuiz() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
-              <p className="text-gray-600">Question {currentQuestion + 1} of {quiz.questions.length}</p>
+              <p className="text-gray-600">Question {currentQuestion + 1} of {quiz?.questions?.length || 0}</p>
             </div>
             <div className="flex items-center text-red-500">
               <Clock className="h-5 w-5 mr-2" />
@@ -216,7 +216,7 @@ export default function TakeQuiz() {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
+                style={{ width: `${((currentQuestion + 1) / (quiz?.questions?.length || 1)) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -225,11 +225,11 @@ export default function TakeQuiz() {
         {/* Question */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            {currentQ.question}
+            {currentQ?.question || 'Loading question...'}
           </h2>
 
           <div className="space-y-3">
-            {currentQ.options.map((option, index) => (
+            {currentQ?.options?.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleAnswerSelect(index)}
@@ -263,7 +263,7 @@ export default function TakeQuiz() {
             </button>
 
             <div className="flex space-x-2">
-              {quiz.questions.map((_, index) => (
+              {quiz?.questions?.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => {
@@ -284,11 +284,11 @@ export default function TakeQuiz() {
             </div>
 
             <button
-              onClick={currentQuestion === quiz.questions.length - 1 ? handleFinishQuiz : handleNextQuestion}
+              onClick={currentQuestion === (quiz?.questions?.length || 1) - 1 ? handleFinishQuiz : handleNextQuestion}
               disabled={selectedAnswer === null}
               className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {currentQuestion === quiz.questions.length - 1 ? (
+              {currentQuestion === (quiz?.questions?.length || 1) - 1 ? (
                 <>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Finish Quiz

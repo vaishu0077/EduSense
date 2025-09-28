@@ -356,22 +356,7 @@ export default function CreateQuiz() {
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-4">
-            <button
-              onClick={() => router.push('/')}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={startQuiz}
-              className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Start Quiz
-            </button>
-          </div>
+          {/* Actions - Removed duplicate buttons, using Attempt Quiz button in status section */}
         </div>
       </main>
     </div>
